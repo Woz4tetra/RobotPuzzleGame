@@ -39,7 +39,22 @@ public class PlayerAgent : MonoBehaviour
     {
         float horizontal = Input.GetAxis("Vertical") * forceMagnitude;
         float vertical = Input.GetAxis("Horizontal") * forceMagnitude;
-        body.velocity = new Vector3(vertical, horizontal, 0.0f);
+        bool isForwarding = Input.GetKey(KeyCode.E);
+        bool isReversing = Input.GetKey(KeyCode.Q);
+
+        if (isReversing)
+        {
+            seekTime(false);
+        }
+        else if (isForwarding)
+        {
+            seekTime(true);
+        }
+        else
+        {
+            body.velocity = new Vector3(vertical, horizontal, 0.0f);
+        }
+
         Vector3 screenPos = playerCam.WorldToScreenPoint(transform.position);
         screenPos.x /= playerCam.pixelWidth;
         screenPos.y /= playerCam.pixelHeight;
@@ -55,12 +70,21 @@ public class PlayerAgent : MonoBehaviour
 
             playerCam.transform.SetPositionAndRotation(smoothedPosition, smoothedRotation);
         }
-
         passingTimeManager.setTimePassing(body.velocity.magnitude > movementThreshold);
+
+    }
+
+    void seekTime(bool forward)
+    {
+        if (!passingTimeManager.IsTimePassing())
+        {
+            float delta = forward ? Time.deltaTime : -Time.deltaTime;
+            passingTimeManager.seekTime(delta);
+        }
     }
     void OnGUI()
     {
-        string text = $"Duration {passingTimeManager.getDuration():0.00}";
+        string text = $"Duration {passingTimeManager.GetDuration():0.00}";
         Vector2 size = labelStyle.CalcSize(new GUIContent(text));
 
         Rect boxRect = new Rect(Screen.width - size.x - 2 * labelBorderSize, 0, size.x + 2 * labelBorderSize, size.y + 2 * labelBorderSize);

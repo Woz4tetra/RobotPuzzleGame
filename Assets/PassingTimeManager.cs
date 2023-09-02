@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PassingTimeManager : MonoBehaviour
@@ -20,18 +17,27 @@ public class PassingTimeManager : MonoBehaviour
         }
     }
 
-    public bool isTimePassing()
+    public bool IsTimePassing()
     {
         return timePassing;
     }
 
-    public float getDuration()
+    public float GetDuration()
     {
         return duration;
     }
 
     public void setTimePassing(bool isTimePassing)
     {
-        this.timePassing = isTimePassing;
+        timePassing = isTimePassing;
+    }
+
+    public void seekTime(float delta)
+    {
+        duration += delta;
+        if (duration < 0.0f)
+        {
+            duration = 0.0f;
+        }
     }
 }

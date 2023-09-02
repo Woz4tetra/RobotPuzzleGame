@@ -3,6 +3,7 @@ using UnityEngine;
 public class PassingTimeManager : MonoBehaviour
 {
     private float duration = 0.0f;
+    private float savePointDuration = 0.0f;
     private bool timePassing = false;
     void Start()
     {
@@ -11,10 +12,7 @@ public class PassingTimeManager : MonoBehaviour
 
     void Update()
     {
-        if (timePassing)
-        {
-            duration += Time.deltaTime;
-        }
+
     }
 
     public bool IsTimePassing()
@@ -27,17 +25,24 @@ public class PassingTimeManager : MonoBehaviour
         return duration;
     }
 
-    public void setTimePassing(bool isTimePassing)
-    {
-        timePassing = isTimePassing;
-    }
 
-    public void seekTime(float delta)
+    public void SeekTime(float delta)
     {
         duration += delta;
         if (duration < 0.0f)
         {
             duration = 0.0f;
         }
+        bool movingIntoFuture = duration >= savePointDuration;
+        if (movingIntoFuture)
+        {
+            savePointDuration = duration;
+        }
+        timePassing = delta > 0.0f && movingIntoFuture;
+    }
+
+    public void ResumeFromSave()
+    {
+        savePointDuration = duration;
     }
 }

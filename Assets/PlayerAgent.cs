@@ -42,13 +42,15 @@ public class PlayerAgent : MonoBehaviour
         bool isForwarding = Input.GetKey(KeyCode.E);
         bool isReversing = Input.GetKey(KeyCode.Q);
 
+        float deltaTime = 0.0f;
+
         if (isReversing)
         {
-            seekTime(false);
+            deltaTime = -1 * Time.deltaTime;
         }
         else if (isForwarding)
         {
-            seekTime(true);
+            deltaTime = Time.deltaTime;
         }
         else
         {
@@ -70,18 +72,14 @@ public class PlayerAgent : MonoBehaviour
 
             playerCam.transform.SetPositionAndRotation(smoothedPosition, smoothedRotation);
         }
-        passingTimeManager.setTimePassing(body.velocity.magnitude > movementThreshold);
-
-    }
-
-    void seekTime(bool forward)
-    {
-        if (!passingTimeManager.IsTimePassing())
+        if (body.velocity.magnitude > movementThreshold)
         {
-            float delta = forward ? Time.deltaTime : -Time.deltaTime;
-            passingTimeManager.seekTime(delta);
+            deltaTime = Time.deltaTime;
+            passingTimeManager.ResumeFromSave();
         }
+        passingTimeManager.SeekTime(deltaTime);
     }
+
     void OnGUI()
     {
         string text = $"Duration {passingTimeManager.GetDuration():0.00}";

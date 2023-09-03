@@ -58,7 +58,10 @@ public abstract class InteractableObject : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        ReadOnlySpan<Vector3> positions = historyManager.getPositions().ToArray();
-        Gizmos.DrawLineStrip(positions, false);
+        if (historyManager != null)
+        {
+            ReadOnlySpan<Vector3> positions = historyManager.getPositions().ToArray();
+            Gizmos.DrawLineStrip(positions, false);
+        }
     }
 }

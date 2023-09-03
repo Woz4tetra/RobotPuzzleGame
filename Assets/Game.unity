@@ -802,7 +802,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1009,7 +1009,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timePassingManager: {fileID: 1327954889}
-  historyRecordInterval: 3
+  historyRecordInterval: 0
 --- !u!1 &702204544
 GameObject:
   m_ObjectHideFlags: 0
@@ -2325,4 +2325,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timePassingManager: {fileID: 1327954889}
-  historyRecordInterval: 3
+  historyRecordInterval: 0

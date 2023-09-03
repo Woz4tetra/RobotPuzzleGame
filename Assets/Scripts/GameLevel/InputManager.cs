@@ -34,6 +34,11 @@ public class InputManager : MonoBehaviour
         return GetMovementVector().magnitude > movementDeadzone;
     }
 
+    public bool FastMovementToggled()
+    {
+        return Input.GetKey(KeyCode.LeftControl);  // TODO reference key mapping
+    }
+
     public int GetSeekDirection()
     {
         bool isForwarding = Input.GetKey(KeyCode.E);  // TODO reference key mapping
@@ -56,7 +61,8 @@ public class InputManager : MonoBehaviour
     {
         return new InteractableObjectInput
         {
-            moveDirection = GetMovementVector()
+            moveDirection = GetMovementVector(),
+            fastToggle = FastMovementToggled()
         };
     }
 }

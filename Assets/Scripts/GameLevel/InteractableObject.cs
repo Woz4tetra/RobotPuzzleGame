@@ -9,6 +9,7 @@ public abstract class InteractableObject : MonoBehaviour
     void Start()
     {
         InteractableObjectStart();
+        gameObject.tag = "Interactive";
     }
 
     protected void InteractableObjectStart()
@@ -36,6 +37,24 @@ public abstract class InteractableObject : MonoBehaviour
     public Vector3 GetPosition()
     {
         return transform.position;
+    }
+
+    public void OnExternalCollisionEnter(GameObject collidingObject)
+    {
+        historyManager.NewMotionCallback();
+    }
+
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Interactive"))
+        {
+            InteractableObject interactableObject = collision.gameObject.GetComponent<InteractableObject>();
+            if (interactableObject != null)
+            {
+                interactableObject.OnExternalCollisionEnter(gameObject);
+            }
+        }
     }
 
     void OnDrawGizmos()

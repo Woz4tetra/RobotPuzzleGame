@@ -33,6 +33,11 @@ public abstract class InteractableObject : MonoBehaviour
 
     abstract public void SetActive(bool active);
 
+    public Vector3 GetPosition()
+    {
+        return transform.position;
+    }
+
     void OnDrawGizmos()
     {
         ReadOnlySpan<Vector3> positions = historyManager.getPositions().ToArray();

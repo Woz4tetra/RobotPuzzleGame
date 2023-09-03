@@ -18,22 +18,16 @@ public class SceneManager : MonoBehaviour
     [SerializeField] private InteractionBroadcaster interactionBroadcaster;
     [SerializeField] private ObjectiveManager objectiveManager;
     [SerializeField] private Robot activeRobot;
+    [SerializeField] private CameraObjectFollower cameraFollower;
 
-    private GUIStyle labelStyle;
     private int labelBorderSize = 5;
 
     private LevelState levelState = LevelState.Frozen;
 
     void Start()
     {
-        labelStyle = new GUIStyle
-        {
-            fontSize = 20,
-            fontStyle = FontStyle.Bold,
-            normal = { textColor = Color.white }
-        };
-
         activeRobot.SetActive(true);
+        interactionBroadcaster.SetInteractableObjects(interactableObjects);
     }
 
     void Update()
@@ -43,8 +37,9 @@ public class SceneManager : MonoBehaviour
 
     void StateMachineUpdate()
     {
-        levelState = GetActiveState(levelState);
-        OnStateUpdate(levelState);
+        LevelState newState = GetActiveState(levelState);
+        OnStateUpdate(newState, levelState);
+        levelState = newState;
     }
 
     LevelState GetActiveState(LevelState prevState)
@@ -61,7 +56,7 @@ public class SceneManager : MonoBehaviour
                 state = LevelState.Paused;
             }
         }
-        if (state != LevelState.Paused)
+        else if (state != LevelState.Paused)
         {
             state = GetActiveStateGameActive(state);
         }
@@ -74,7 +69,7 @@ public class SceneManager : MonoBehaviour
         if (inputManager.InteractToggled() && state != LevelState.Moving)
         {
             if (state == LevelState.Interacting &&
-                interactionBroadcaster.IsInteractionObjectRobot())
+                interactionBroadcaster.IsInteractionObjectRobotOrNull())
             {
                 state = LevelState.Frozen;
             }
@@ -83,7 +78,7 @@ public class SceneManager : MonoBehaviour
                 state = LevelState.Interacting;
             }
         }
-        if (state != LevelState.Interacting)
+        else if (state != LevelState.Interacting)
         {
             if (inputManager.SeekToggled())
             {
@@ -101,12 +96,29 @@ public class SceneManager : MonoBehaviour
         return state;
     }
 
-    void OnStateUpdate(LevelState state)
+    void OnStateUpdate(LevelState newState, LevelState prevState)
     {
         float deltaTime = 0.0f;
-        interactionBroadcaster.SetActive(state == LevelState.Interacting);
-        pauseMenuManager.SetActive(state == LevelState.Paused);
-        switch (state)
+        if (newState != prevState)
+        {
+            switch (newState)
+            {
+                case LevelState.Seeking: goto case LevelState.Frozen;
+                case LevelState.Moving: goto case LevelState.Frozen;
+                case LevelState.Paused: goto case LevelState.Frozen;
+                case LevelState.Frozen:
+                    cameraFollower.SetFollowObject(GetActiveRobot().gameObject);
+                    break;
+                case LevelState.Interacting:
+                    cameraFollower.SetFollowObject(interactionBroadcaster.gameObject);
+                    break;
+                default:
+                    break;
+            }
+            interactionBroadcaster.OnActiveChange(newState == LevelState.Interacting, GetActiveRobot().GetPosition());
+            pauseMenuManager.OnActiveChange(newState == LevelState.Paused);
+        }
+        switch (newState)
         {
             case LevelState.Seeking:
                 deltaTime = inputManager.GetSeekDirection() * Time.deltaTime;
@@ -116,6 +128,7 @@ public class SceneManager : MonoBehaviour
                 deltaTime = Time.deltaTime;
                 break;
             case LevelState.Interacting:
+                interactionBroadcaster.MovePointer(inputManager.GetInteractionStruct());
                 if (interactionBroadcaster.IsInteractionObjectRobot())
                 {
                     SetActiveRobot((Robot)interactionBroadcaster.GetInteractionObject());
@@ -160,7 +173,15 @@ public class SceneManager : MonoBehaviour
 
     void OnGUI()
     {
-        string text = $"Duration {timePassingManager.GetDuration():0.00}";
+        string text = "";
+        text += $"Duration {timePassingManager.GetDuration():0.00}\n";
+        text += $"State {levelState}\n";
+        GUIStyle labelStyle = new GUIStyle
+        {
+            fontSize = 20,
+            fontStyle = FontStyle.Bold,
+            normal = { textColor = Color.white }
+        };
         Vector2 size = labelStyle.CalcSize(new GUIContent(text));
 
         Rect boxRect = new Rect(Screen.width - size.x - 2 * labelBorderSize, 0, size.x + 2 * labelBorderSize, size.y + 2 * labelBorderSize);

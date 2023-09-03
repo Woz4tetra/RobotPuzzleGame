@@ -6,7 +6,7 @@ public class PauseMenuManager : MonoBehaviour
 
     }
 
-    public void SetActive(bool active)
+    public void OnActiveChange(bool active)
     {
 
     }

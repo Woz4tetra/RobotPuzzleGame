@@ -13,8 +13,6 @@ public class CameraObjectFollower : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
-
         playerCam = GetComponent<Camera>();
         Matrix4x4 playerMat = Matrix4x4.TRS(followObject.transform.position, followObject.transform.rotation, Vector3.one);
         Matrix4x4 cameraMat = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
@@ -44,5 +42,10 @@ public class CameraObjectFollower : MonoBehaviour
     bool IsWithinMargin(float value)
     {
         return value > followMargin && value < 1.0f - followMargin;
+    }
+
+    public void SetFollowObject(GameObject followObject)
+    {
+        this.followObject = followObject;
     }
 }

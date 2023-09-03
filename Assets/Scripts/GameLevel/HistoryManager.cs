@@ -13,7 +13,7 @@ public class HistoryManager
     private readonly Transform parentTransform;
     private bool isActivelyControlled = false;
     private float prevDuration = 0.0f;
-    private float savePointDuration = 0.0f;
+    private float timeFrontier = 0.0f;
 
     List<ObjectInstant> path = new List<ObjectInstant>();
     List<float> timestamps = new List<float>();
@@ -101,8 +101,7 @@ public class HistoryManager
             else
             {
                 float startTime = timestamps[indices.Item1];
-                float segmentSize = timestamps[indices.Item2] - startTime;
-                float interval = (managerDuration - startTime) / segmentSize;
+                float interval = (managerDuration - startTime) / (timestamps[indices.Item2] - startTime);
                 return ObjectInstant.Slerp(path[indices.Item1], path[indices.Item2], interval);
             }
         }
@@ -167,17 +166,22 @@ public class HistoryManager
         float currentDuration = timePassingManager.GetDuration();
         float delta = currentDuration - prevDuration;
         prevDuration = currentDuration;
-        bool movingIntoFuture = timePassingManager.GetDuration() >= savePointDuration;
+        bool movingIntoFuture = timePassingManager.GetDuration() >= timeFrontier;
         if (movingIntoFuture)
         {
-            savePointDuration = currentDuration;
+            timeFrontier = currentDuration;
         }
         return delta > 0.0f && movingIntoFuture;
     }
 
 
-    public void ResumeFromSave()
+    public void NewMotionCallback()
     {
-        savePointDuration = timePassingManager.GetDuration();
+        RecordTimeFrontier();
+    }
+
+    private void RecordTimeFrontier()
+    {
+        timeFrontier = timePassingManager.GetDuration();
     }
 }

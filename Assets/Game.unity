@@ -783,7 +783,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timePassingManager: {fileID: 1327954889}
-  historyRecordInterval: 0
+  historyRecordInterval: 3
 --- !u!1 &702204544
 GameObject:
   m_ObjectHideFlags: 0
@@ -1871,4 +1871,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timePassingManager: {fileID: 1327954889}
-  historyRecordInterval: 0
+  historyRecordInterval: 3

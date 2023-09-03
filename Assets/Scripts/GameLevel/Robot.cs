@@ -8,7 +8,7 @@ public class Robot : InteractableObject
         Vector3 force = new Vector3(objectInput.moveDirection.x, objectInput.moveDirection.y, 0.0f);
         force *= forceMagnitude;
         body.velocity = force;
-        historyManager.ResumeFromSave();
+        historyManager.NewMotionCallback();
     }
 
     override public void SetActive(bool active)

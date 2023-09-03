@@ -2,6 +2,41 @@ using UnityEngine;
 
 public class SceneManager : MonoBehaviour
 {
+    /**
+        Scene setup instructions
+        Create empty game object at the origin:
+            - Managers
+            - Robots
+            - InanimateObjects
+            - StaticObjects
+        Add child objects to Managers:
+            - SceneManager
+            - TimePassingManager
+            - InputManager
+            - PauseMenuManager
+            - InteractionBroadcaster
+            - ObjectiveManager
+        Add child objects to Robots:
+            - Any robots in the scene (game objects with Robot script attached)
+        Add child objects to InanimateObjects:
+            - Any inanimate objects in the scene (game objects with InanimateObject script attached)
+        Add child objects to StaticObjects:
+            - Any static objects in the scene
+
+        Edit Main Camera:
+            - Add component CameraObjectFollower Script
+            - Set Follow Object to initial Robot
+        Edit SceneManager:
+            - Add as many controllable objects as there are robots in the scene
+                - Point each entry to a unique robot
+            - Point TimePassingManager to TimePassingManager object
+            - Point InputManager to InputManager object
+            - Point PauseMenuManager to PauseMenuManager object
+            - Point InteractionBroadcaster to InteractionBroadcaster object
+            - Point ObjectiveManager to ObjectiveManager object
+            - Point Active Robot to initial Robot
+            - Point CameraFollower to CameraFollower object
+     */
     public enum LevelState
     {
         Paused,
@@ -11,7 +46,7 @@ public class SceneManager : MonoBehaviour
         Interacting
     };
 
-    [SerializeField] private InteractableObject[] interactableObjects;
+    [SerializeField] private InteractableObject[] controllableObjects;
     [SerializeField] private TimePassingManager timePassingManager;
     [SerializeField] private InputManager inputManager;
     [SerializeField] private PauseMenuManager pauseMenuManager;
@@ -27,7 +62,7 @@ public class SceneManager : MonoBehaviour
     void Start()
     {
         activeRobot.SetActive(true);
-        interactionBroadcaster.SetInteractableObjects(interactableObjects);
+        interactionBroadcaster.SetInteractableObjects(controllableObjects);
     }
 
     void Update()
@@ -157,7 +192,7 @@ public class SceneManager : MonoBehaviour
 
     void SetActiveRobot(Robot robot)
     {
-        foreach (InteractableObject obj in interactableObjects)
+        foreach (InteractableObject obj in controllableObjects)
         {
             if (!typeof(Robot).IsInstanceOfType(obj))
             {

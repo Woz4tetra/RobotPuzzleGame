@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 54780282}
   m_Layer: 0
   m_Name: Rolling Ball
-  m_TagString: Untagged
+  m_TagString: Interactive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -599,7 +599,7 @@ GameObject:
   - component: {fileID: 458680032}
   m_Layer: 0
   m_Name: Puck2
-  m_TagString: Untagged
+  m_TagString: Interactive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -676,7 +676,7 @@ GameObject:
   - component: {fileID: 503650613}
   m_Layer: 0
   m_Name: Puck1
-  m_TagString: Untagged
+  m_TagString: Interactive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -865,7 +865,7 @@ GameObject:
   - component: {fileID: 688162579}
   m_Layer: 0
   m_Name: Bouncing Ball 1
-  m_TagString: Untagged
+  m_TagString: Interactive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1836,7 +1836,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6e8f4afe2aaf898289b4ec75340134a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactableObjects:
+  controllableObjects:
   - {fileID: 503650613}
   - {fileID: 458680032}
   timePassingManager: {fileID: 1327954889}
@@ -2181,7 +2181,7 @@ GameObject:
   - component: {fileID: 2140329863}
   m_Layer: 0
   m_Name: Bouncing Ball 2
-  m_TagString: Untagged
+  m_TagString: Interactive
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

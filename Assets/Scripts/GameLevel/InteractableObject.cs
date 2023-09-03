@@ -9,7 +9,6 @@ public abstract class InteractableObject : MonoBehaviour
     void Start()
     {
         InteractableObjectStart();
-        gameObject.tag = "Interactive";
     }
 
     protected void InteractableObjectStart()

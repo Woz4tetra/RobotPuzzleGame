@@ -14,7 +14,7 @@ public abstract class InteractableObject : MonoBehaviour
     protected void InteractableObjectStart()
     {
         body = GetComponent<Rigidbody>();
-        historyManager = new HistoryManager(body, transform, timePassingManager, false);
+        historyManager = new HistoryManager(body, transform, timePassingManager);
     }
 
     void Update()

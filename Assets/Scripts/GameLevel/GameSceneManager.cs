@@ -190,6 +190,9 @@ public class GameSceneManager : MonoBehaviour
                 case LevelState.Interacting:
                     cameraFollower.SetFollowObject(interactionBroadcaster.gameObject);
                     break;
+                case LevelState.Reset:
+                    realTimeStart = Time.realtimeSinceStartup;
+                    break;
                 default:
                     break;
             }
@@ -207,7 +210,7 @@ public class GameSceneManager : MonoBehaviour
                 deltaTime = Time.deltaTime;
                 break;
             case LevelState.Interacting:
-                Time.timeScale = 0.0f;
+                FreezePhysics();
                 interactionBroadcaster.MovePointer(inputManager.GetInteractionStruct());
                 if (interactionBroadcaster.IsInteractionObjectRobot())
                 {
@@ -217,15 +220,15 @@ public class GameSceneManager : MonoBehaviour
             case LevelState.Paused:
                 break;
             case LevelState.Frozen:
-                Time.timeScale = 0.0f;
+                FreezePhysics();
                 deltaTime = 0.0f;
                 break;
             case LevelState.GameOver:
-                Time.timeScale = 0.0f;
+                FreezePhysics();
                 // TODO show game over screen
                 break;
             case LevelState.GameWin:
-                Time.timeScale = 0.0f;
+                FreezePhysics();
                 // TODO show win screen
                 break;
             case LevelState.Reset:
@@ -242,6 +245,12 @@ public class GameSceneManager : MonoBehaviour
     Robot GetActiveRobot()
     {
         return activeRobot;
+    }
+
+    void FreezePhysics()
+    {
+        Time.timeScale = 0.0f;
+
     }
 
     void SetActiveRobot(Robot robot)

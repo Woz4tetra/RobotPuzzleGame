@@ -702,9 +702,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timePassingManager: {fileID: 1327954889}
   historyRecordInterval: 0
-  forceMagnitude: 10
-  fastForceMagnitude: 20
-  maximumSpeed: 3
+  forceMagnitude: 1
+  fastForceMagnitude: 2
+  maximumSpeed: 10
 --- !u!54 &458680033
 Rigidbody:
   m_ObjectHideFlags: 0

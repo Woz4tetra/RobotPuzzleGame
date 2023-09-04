@@ -12,19 +12,17 @@ public class HistoryManager
     private readonly Rigidbody body;
     private readonly TimePassingManager timePassingManager;
     private readonly Transform parentTransform;
-    private bool isActivelyControlled = false;
     private float prevDuration = 0.0f;
     private float timeFrontier = 0.0f;
 
     List<ObjectInstant> path = new List<ObjectInstant>();
     List<float> timestamps = new List<float>();
 
-    public HistoryManager(Rigidbody body, Transform parentTransform, TimePassingManager timePassingManager, bool isActive)
+    public HistoryManager(Rigidbody body, Transform parentTransform, TimePassingManager timePassingManager)
     {
         this.body = body;
         this.parentTransform = parentTransform;
         this.timePassingManager = timePassingManager;
-        SetActiveControl(isActive);
         SetObjectFreeze(true);
     }
 
@@ -64,26 +62,9 @@ public class HistoryManager
         wasTimePassing = isTimePassing;
     }
 
-    public void SetActiveControl(bool isActive)
-    {
-        isActivelyControlled = isActive;
-        if (isActivelyControlled)
-        {
-            body.isKinematic = false;
-        }
-    }
-    public bool IsControlActive()
-    {
-        return isActivelyControlled;
-    }
-
     void SetObjectFreeze(bool isFrozen)
     {
         this.isFrozen = isFrozen;
-        if (!isActivelyControlled)
-        {
-            body.isKinematic = isFrozen;
-        }
     }
 
     ObjectInstant GetNearestInstant(float managerDuration)

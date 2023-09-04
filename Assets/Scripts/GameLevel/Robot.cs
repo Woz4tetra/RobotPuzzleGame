@@ -4,6 +4,7 @@ public class Robot : InteractableObject
     [SerializeField] private float forceMagnitude = 1.0f;
     [SerializeField] private float fastForceMagnitude = 2.0f;
     [SerializeField] private float maximumSpeed = 3.0f;
+    private bool isActivelyControlled = false;
 
     override protected void InteractableObjectUpdate()
     {
@@ -34,10 +35,10 @@ public class Robot : InteractableObject
 
     override public void SetActive(bool active)
     {
-        historyManager.SetActiveControl(active);
+        isActivelyControlled = active;
     }
     override public bool IsActive()
     {
-        return historyManager.IsControlActive();
+        return isActivelyControlled;
     }
 }

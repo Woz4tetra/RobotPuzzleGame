@@ -68,11 +68,16 @@ public class GameSceneManager : MonoBehaviour
     private int labelBorderSize = 5;
 
     private LevelState levelState = LevelState.Frozen;
+    private LevelState beforePauseState = LevelState.Frozen;
+    private float realTimeStart = 0.0f;
+    private Robot initialActiveRobot;
 
     void Start()
     {
+        initialActiveRobot = activeRobot;
         activeRobot.SetActive(true);
         interactionBroadcaster.SetInteractableObjects(controllableObjects);
+        realTimeStart = Time.realtimeSinceStartup;
     }
 
     void Update()
@@ -94,10 +99,11 @@ public class GameSceneManager : MonoBehaviour
         {
             if (state == LevelState.Paused)
             {
-                state = LevelState.Frozen;
+                state = beforePauseState;
             }
             else
             {
+                beforePauseState = state;
                 state = LevelState.Paused;
             }
         }
@@ -219,6 +225,7 @@ public class GameSceneManager : MonoBehaviour
                 break;
             case LevelState.Reset:
                 deltaTime = -Time.deltaTime * resetSpeedMultiplier;
+                SetActiveRobot(initialActiveRobot);
                 break;
             default:
                 break;
@@ -248,10 +255,17 @@ public class GameSceneManager : MonoBehaviour
         }
     }
 
+    public float GetEnergySpent()
+    {
+        // "Energy" is really just the time spent in the level
+        return Time.realtimeSinceStartup - realTimeStart;
+    }
+
     void OnGUI()
     {
         string text = "";
-        text += $"Duration {timePassingManager.GetDuration():0.00}\n";
+        text += $"Duration {timePassingManager.GetDuration():0.00} s\n";
+        text += $"Energy {GetEnergySpent():0.00} mJ\n";
         text += $"State {levelState}\n";
         GUIStyle labelStyle = new GUIStyle
         {

@@ -16,4 +16,8 @@ public class Robot : InteractableObject
     {
         historyManager.SetActiveControl(active);
     }
+    override public bool IsActive()
+    {
+        return historyManager.IsControlActive();
+    }
 }

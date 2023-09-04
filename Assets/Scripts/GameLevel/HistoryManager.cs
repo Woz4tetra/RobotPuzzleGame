@@ -79,6 +79,10 @@ public class HistoryManager
             body.isKinematic = false;
         }
     }
+    public bool IsControlActive()
+    {
+        return isActivelyControlled;
+    }
 
     void SetObjectFreeze(bool isFrozen)
     {

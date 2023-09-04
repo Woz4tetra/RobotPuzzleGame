@@ -32,6 +32,7 @@ public abstract class InteractableObject : MonoBehaviour
     abstract public void Interact(InteractableObjectInput objectInput);
 
     abstract public void SetActive(bool active);
+    abstract public bool IsActive();
 
     public Vector3 GetPosition()
     {

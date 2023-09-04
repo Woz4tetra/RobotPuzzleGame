@@ -1,6 +1,7 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class SceneManager : MonoBehaviour
+public class GameSceneManager : MonoBehaviour
 {
     /**
         Scene setup instructions
@@ -23,6 +24,8 @@ public class SceneManager : MonoBehaviour
             - Any inanimate objects in the scene (game objects with InanimateObject script attached)
         Add child objects to StaticObjects:
             - Any static objects in the scene
+        Add child objects to Objectives:
+            - Any objective criteria in the scene (game objects with an ObjectiveCriteria type script attached)
 
         Edit Main Camera:
             - Add component CameraObjectFollower Script
@@ -37,6 +40,8 @@ public class SceneManager : MonoBehaviour
             - Point ObjectiveManager to ObjectiveManager object
             - Point Active Robot to initial Robot
             - Point CameraFollower to CameraFollower object
+        Edit ObjectiveManager:
+            - Add all objective criteria in the scene to "Criteria"
      */
     public enum LevelState
     {
@@ -46,7 +51,8 @@ public class SceneManager : MonoBehaviour
         Seeking,
         Interacting,
         GameOver,
-        GameWin
+        GameWin,
+        Reset
     };
 
     [SerializeField] private InteractableObject[] controllableObjects;
@@ -57,6 +63,7 @@ public class SceneManager : MonoBehaviour
     [SerializeField] private ObjectiveManager objectiveManager;
     [SerializeField] private Robot activeRobot;
     [SerializeField] private CameraObjectFollower cameraFollower;
+    [SerializeField] private float resetSpeedMultiplier = 10.0f;
 
     private int labelBorderSize = 5;
 
@@ -96,6 +103,14 @@ public class SceneManager : MonoBehaviour
         }
         else if (state != LevelState.Paused)
         {
+            if (inputManager.IsReset())
+            {
+                state = LevelState.Reset;
+            }
+            if (state == LevelState.Reset && timePassingManager.GetDuration() > 0.0f)
+            {
+                return state;
+            }
             state = GetActiveStateGameActive(state);
             state = GetActiveStateObjectiveCriteria(state);
         }
@@ -201,6 +216,9 @@ public class SceneManager : MonoBehaviour
                 break;
             case LevelState.GameWin:
                 // TODO show win screen
+                break;
+            case LevelState.Reset:
+                deltaTime = -Time.deltaTime * resetSpeedMultiplier;
                 break;
             default:
                 break;

@@ -39,6 +39,11 @@ public class InputManager : MonoBehaviour
         return Input.GetKey(KeyCode.LeftControl);  // TODO reference key mapping
     }
 
+    public bool IsReset()
+    {
+        return Input.GetKeyDown(KeyCode.R);  // TODO reference key mapping
+    }
+
     public int GetSeekDirection()
     {
         bool isForwarding = Input.GetKey(KeyCode.E);  // TODO reference key mapping

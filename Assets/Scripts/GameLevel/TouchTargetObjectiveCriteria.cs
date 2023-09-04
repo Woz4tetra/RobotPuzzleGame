@@ -7,6 +7,10 @@ public class TouchTargetObjectiveCriteria : ObjectiveCriteria
     void Update()
     {
         bool isMet = IsCriteriaMet();
+        if (!isMet)
+        {
+            clearTime = -1.0f;
+        }
         VisualsObject.gameObject.SetActive(!isMet);
     }
 

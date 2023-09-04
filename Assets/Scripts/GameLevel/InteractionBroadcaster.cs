@@ -43,16 +43,17 @@ public class InteractionBroadcaster : MonoBehaviour
     public InteractableObject GetInteractionObject()
     {
         InteractableObject closestObject = null;
+        float closestDistance = 0.0f;
         foreach (InteractableObject interactableObject in interactableObjects)
         {
             Vector3 objectPosition = interactableObject.GetPosition();
             float distance = Vector3.Distance(objectPosition, transform.position);
-            if (distance < interactionRadius)
+            if (distance < interactionRadius &&
+                (closestObject == null || distance < closestDistance) &&
+                !interactableObject.IsActive())
             {
-                if (closestObject == null || distance < Vector3.Distance(closestObject.GetPosition(), transform.position))
-                {
-                    closestObject = interactableObject;
-                }
+                closestDistance = distance;
+                closestObject = interactableObject;
             }
         }
         return closestObject;

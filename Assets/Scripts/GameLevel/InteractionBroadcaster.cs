@@ -50,7 +50,7 @@ public class InteractionBroadcaster : MonoBehaviour
             float distance = Vector3.Distance(objectPosition, transform.position);
             if (distance < interactionRadius &&
                 (closestObject == null || distance < closestDistance) &&
-                !interactableObject.IsActive())
+                !interactableObject.IsActivelyControlled())
             {
                 closestDistance = distance;
                 closestObject = interactableObject;

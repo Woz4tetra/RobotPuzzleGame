@@ -50,11 +50,11 @@ public class Robot : InteractableObject
         return force;
     }
 
-    override public void SetActive(bool active)
+    override public void SetActivelyControlled(bool active)
     {
         historyManager.SetActiveControl(active);
     }
-    override public bool IsActive()
+    override public bool IsActivelyControlled()
     {
         return historyManager.IsControlActive();
     }

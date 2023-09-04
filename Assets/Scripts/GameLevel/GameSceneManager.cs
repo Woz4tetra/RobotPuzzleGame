@@ -76,10 +76,11 @@ public class GameSceneManager : MonoBehaviour
     void Start()
     {
         initialActiveRobot = activeRobot;
-        activeRobot.SetActive(true);
+        activeRobot.SetActivelyControlled(true);
         interactionBroadcaster.SetInteractableObjects(controllableObjects);
         realTimeStart = Time.realtimeSinceStartup;
         ResetToInitialVelocities();
+        Application.targetFrameRate = 30;
     }
 
     void Update()
@@ -304,7 +305,7 @@ public class GameSceneManager : MonoBehaviour
             {
                 continue;
             }
-            obj.SetActive(obj == robot);
+            obj.SetActivelyControlled(obj == robot);
             if (obj == robot)
             {
                 activeRobot = robot;

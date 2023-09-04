@@ -23,6 +23,10 @@ public abstract class InteractableObject : MonoBehaviour
         {
             historyManager.Update();
         }
+        if (IsActivelyControlled())
+        {
+            Debug.Log($"position: {transform.position}");
+        }
         InteractableObjectUpdate();
     }
     abstract protected void InteractableObjectUpdate();
@@ -30,8 +34,8 @@ public abstract class InteractableObject : MonoBehaviour
     abstract public void Interact(InteractableObjectInput objectInput);
     abstract public void Coast();
 
-    abstract public void SetActive(bool active);
-    abstract public bool IsActive();
+    abstract public void SetActivelyControlled(bool active);
+    abstract public bool IsActivelyControlled();
 
     public Vector3 GetPosition()
     {

@@ -26,6 +26,7 @@ public class HistoryManager
         this.timePassingManager = timePassingManager;
         SetActiveControl(isActive);
         SetObjectFreeze(true);
+        AddInstant(MakeInstant());
     }
 
 
@@ -46,13 +47,16 @@ public class HistoryManager
                 ApplyNearestTemporalPose(managerDuration);
             }
         }
+        else
+        {
+            prevFrozenTime = managerDuration;
+        }
 
         if (wasTimePassing != isTimePassing)
         {
             if (!isTimePassing)
             {
                 SetObjectFreeze(true);
-                prevFrozenTime = managerDuration;
             }
             else
             {
@@ -94,22 +98,19 @@ public class HistoryManager
         {
             return null;
         }
+        else if (indices.Item1 == -1)
+        {
+            return path[indices.Item2];
+        }
+        else if (indices.Item2 == -1)
+        {
+            return path[indices.Item1];
+        }
         else
         {
-            if (indices.Item1 == -1)
-            {
-                return path[indices.Item2];
-            }
-            else if (indices.Item2 == -1)
-            {
-                return path[indices.Item1];
-            }
-            else
-            {
-                float startTime = timestamps[indices.Item1];
-                float interval = (managerDuration - startTime) / (timestamps[indices.Item2] - startTime);
-                return ObjectInstant.Slerp(path[indices.Item1], path[indices.Item2], interval);
-            }
+            float startTime = timestamps[indices.Item1];
+            float interval = (managerDuration - startTime) / (timestamps[indices.Item2] - startTime);
+            return ObjectInstant.Slerp(path[indices.Item1], path[indices.Item2], interval);
         }
     }
 
@@ -130,6 +131,10 @@ public class HistoryManager
         if (nearestInstant == null)
         {
             return;
+        }
+        if (isActivelyControlled)
+        {
+            Debug.Log($"T: {nearestInstant.pose.GetT()}, {Time.realtimeSinceStartup}");
         }
         parentTransform.position = nearestInstant.pose.GetT();
         parentTransform.rotation = nearestInstant.pose.GetR();

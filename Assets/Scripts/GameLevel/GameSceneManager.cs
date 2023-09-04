@@ -78,6 +78,7 @@ public class GameSceneManager : MonoBehaviour
         activeRobot.SetActive(true);
         interactionBroadcaster.SetInteractableObjects(controllableObjects);
         realTimeStart = Time.realtimeSinceStartup;
+        ZeroAllVelocities();
     }
 
     void Update()
@@ -88,7 +89,7 @@ public class GameSceneManager : MonoBehaviour
     void StateMachineUpdate()
     {
         LevelState newState = GetActiveState(levelState);
-        OnStateUpdate(newState, levelState);
+        StateUpdate(newState, levelState);
         levelState = newState;
     }
 
@@ -174,35 +175,19 @@ public class GameSceneManager : MonoBehaviour
         return state;
     }
 
-    void OnStateUpdate(LevelState newState, LevelState prevState)
+    void StateUpdate(LevelState newState, LevelState prevState)
     {
-        float deltaTime = 0.0f;
         if (newState != prevState)
         {
-            switch (newState)
-            {
-                case LevelState.Seeking: goto case LevelState.Frozen;
-                case LevelState.Moving: goto case LevelState.Frozen;
-                case LevelState.Paused: goto case LevelState.Frozen;
-                case LevelState.Frozen:
-                    cameraFollower.SetFollowObject(GetActiveRobot().gameObject);
-                    break;
-                case LevelState.Interacting:
-                    cameraFollower.SetFollowObject(interactionBroadcaster.gameObject);
-                    break;
-                case LevelState.Reset:
-                    realTimeStart = Time.realtimeSinceStartup;
-                    break;
-                default:
-                    break;
-            }
-            interactionBroadcaster.OnActiveChange(newState == LevelState.Interacting, GetActiveRobot().GetPosition());
-            pauseMenuManager.OnActiveChange(newState == LevelState.Paused);
+            OnStateExit(prevState);
+            OnStateEnter(newState);
         }
         Time.timeScale = 1.0f;
+        float deltaTime = 0.0f;
         switch (newState)
         {
             case LevelState.Seeking:
+                GetActiveRobot().Coast();
                 deltaTime = inputManager.GetSeekDirection() * Time.deltaTime;
                 break;
             case LevelState.Moving:
@@ -210,7 +195,7 @@ public class GameSceneManager : MonoBehaviour
                 deltaTime = Time.deltaTime;
                 break;
             case LevelState.Interacting:
-                FreezePhysics();
+                FreezePhysics();  // put this in every case needed. Putting it at the end breaks some internal ordering
                 interactionBroadcaster.MovePointer(inputManager.GetInteractionStruct());
                 if (interactionBroadcaster.IsInteractionObjectRobot())
                 {
@@ -218,10 +203,10 @@ public class GameSceneManager : MonoBehaviour
                 }
                 break;
             case LevelState.Paused:
+                FreezePhysics();
                 break;
             case LevelState.Frozen:
                 FreezePhysics();
-                deltaTime = 0.0f;
                 break;
             case LevelState.GameOver:
                 FreezePhysics();
@@ -242,6 +227,50 @@ public class GameSceneManager : MonoBehaviour
         timePassingManager.SeekTime(deltaTime);
     }
 
+    void OnStateEnter(LevelState state)
+    {
+        switch (state)
+        {
+            case LevelState.Seeking: goto case LevelState.Frozen;
+            case LevelState.Moving: goto case LevelState.Frozen;
+            case LevelState.Paused: goto case LevelState.Frozen;
+            case LevelState.Frozen:
+                cameraFollower.SetFollowObject(GetActiveRobot().gameObject);
+                break;
+            case LevelState.Interacting:
+                cameraFollower.SetFollowObject(interactionBroadcaster.gameObject);
+                break;
+            case LevelState.Reset:
+                realTimeStart = Time.realtimeSinceStartup;
+                break;
+            default:
+                break;
+        }
+        interactionBroadcaster.OnActiveChange(state == LevelState.Interacting, GetActiveRobot().GetPosition());
+        pauseMenuManager.OnActiveChange(state == LevelState.Paused);
+    }
+
+    void OnStateExit(LevelState state)
+    {
+        switch (state)
+        {
+            case LevelState.Reset:
+                ZeroAllVelocities();
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    void ZeroAllVelocities()
+    {
+        foreach (InteractableObject obj in controllableObjects)
+        {
+            obj.ZeroVelocities();
+        }
+    }
+
     Robot GetActiveRobot()
     {
         return activeRobot;
@@ -250,7 +279,6 @@ public class GameSceneManager : MonoBehaviour
     void FreezePhysics()
     {
         Time.timeScale = 0.0f;
-
     }
 
     void SetActiveRobot(Robot robot)

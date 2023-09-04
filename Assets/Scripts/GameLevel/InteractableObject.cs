@@ -28,6 +28,7 @@ public abstract class InteractableObject : MonoBehaviour
     abstract protected void InteractableObjectUpdate();
 
     abstract public void Interact(InteractableObjectInput objectInput);
+    abstract public void Coast();
 
     abstract public void SetActive(bool active);
     abstract public bool IsActive();
@@ -40,6 +41,12 @@ public abstract class InteractableObject : MonoBehaviour
     public void OnExternalCollisionEnter(GameObject collidingObject)
     {
         historyManager.NewMotionCallback();
+    }
+
+    public void ZeroVelocities()
+    {
+        body.velocity = Vector3.zero;
+        body.angularVelocity = Vector3.zero;
     }
 
 

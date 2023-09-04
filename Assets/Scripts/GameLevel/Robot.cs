@@ -4,7 +4,9 @@ public class Robot : InteractableObject
     [SerializeField] private float forceMagnitude = 1.0f;
     [SerializeField] private float fastForceMagnitude = 2.0f;
     [SerializeField] private float maximumSpeed = 3.0f;
+    [SerializeField] private float coastDecayGain = 0.98f;
     private bool isActivelyControlled = false;
+    private float prevForceMagnitude = 0.0f;
 
     override protected void InteractableObjectUpdate()
     {
@@ -14,6 +16,7 @@ public class Robot : InteractableObject
     override public void Interact(InteractableObjectInput objectInput)
     {
         float speed = Vector3.Magnitude(body.velocity);  // test current object speed
+        Vector3 force;
 
         if (speed > maximumSpeed)
         {
@@ -22,15 +25,22 @@ public class Robot : InteractableObject
             Vector3 normalizedVelocity = body.velocity.normalized;
             Vector3 brakeVelocity = normalizedVelocity * brakeSpeed;  // make the brake Vector3 value
 
-            body.AddForce(-brakeVelocity);  // apply opposing brake force
+            force = -brakeVelocity;  // apply opposing brake force
         }
         else
         {
-            Vector3 force = new Vector3(objectInput.moveDirection.x, objectInput.moveDirection.y, 0.0f);
+            force = new Vector3(objectInput.moveDirection.x, objectInput.moveDirection.y, 0.0f);
             force *= objectInput.fastToggle ? fastForceMagnitude : forceMagnitude;
-            body.AddForce(force, ForceMode.VelocityChange);
         }
+        prevForceMagnitude = force.magnitude;
+        body.AddForce(force, ForceMode.VelocityChange);
         historyManager.NewMotionCallback();
+    }
+    override public void Coast()
+    {
+        Vector3 normalizedVelocity = body.velocity.normalized;
+        prevForceMagnitude = coastDecayGain * prevForceMagnitude;
+        body.AddForce(normalizedVelocity * prevForceMagnitude, ForceMode.VelocityChange);
     }
 
     override public void SetActive(bool active)

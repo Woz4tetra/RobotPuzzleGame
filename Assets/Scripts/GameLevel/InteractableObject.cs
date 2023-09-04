@@ -14,7 +14,7 @@ public abstract class InteractableObject : MonoBehaviour
     protected void InteractableObjectStart()
     {
         body = GetComponent<Rigidbody>();
-        historyManager = new HistoryManager(body, transform, timePassingManager);
+        historyManager = new HistoryManager(body, transform, timePassingManager, false);
     }
 
     void Update()
@@ -45,10 +45,12 @@ public abstract class InteractableObject : MonoBehaviour
 
     public void ZeroVelocities()
     {
-        body.velocity = Vector3.zero;
-        body.angularVelocity = Vector3.zero;
+        if (!body.isKinematic)
+        {
+            body.velocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+        }
     }
-
 
     void OnCollisionEnter(Collision collision)
     {

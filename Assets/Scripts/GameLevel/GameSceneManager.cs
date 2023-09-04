@@ -37,6 +37,7 @@ public class GameSceneManager : MonoBehaviour
             - Point InputManager to InputManager object
             - Point PauseMenuManager to PauseMenuManager object
             - Point InteractionBroadcaster to InteractionBroadcaster object
+                - Set to active to false (this will be set to true when the player presses the interact button)
             - Point ObjectiveManager to ObjectiveManager object
             - Point Active Robot to initial Robot
             - Point CameraFollower to CameraFollower object
@@ -78,7 +79,7 @@ public class GameSceneManager : MonoBehaviour
         activeRobot.SetActive(true);
         interactionBroadcaster.SetInteractableObjects(controllableObjects);
         realTimeStart = Time.realtimeSinceStartup;
-        ZeroAllVelocities();
+        ResetToInitialVelocities();
     }
 
     void Update()
@@ -187,8 +188,16 @@ public class GameSceneManager : MonoBehaviour
         switch (newState)
         {
             case LevelState.Seeking:
-                GetActiveRobot().Coast();
                 deltaTime = inputManager.GetSeekDirection() * Time.deltaTime;
+                if (timePassingManager.GetDuration() + deltaTime > 0.0f)
+                {
+                    GetActiveRobot().Coast();
+                }
+                else
+                {
+                    ResetToInitialVelocities();
+                    ResetEnergyUsage();
+                }
                 break;
             case LevelState.Moving:
                 GetActiveRobot().Interact(inputManager.GetInteractionStruct());
@@ -241,7 +250,6 @@ public class GameSceneManager : MonoBehaviour
                 cameraFollower.SetFollowObject(interactionBroadcaster.gameObject);
                 break;
             case LevelState.Reset:
-                realTimeStart = Time.realtimeSinceStartup;
                 break;
             default:
                 break;
@@ -255,7 +263,8 @@ public class GameSceneManager : MonoBehaviour
         switch (state)
         {
             case LevelState.Reset:
-                ZeroAllVelocities();
+                ResetToInitialVelocities();
+                ResetEnergyUsage();
                 break;
             default:
                 break;
@@ -263,12 +272,18 @@ public class GameSceneManager : MonoBehaviour
 
     }
 
-    void ZeroAllVelocities()
+    void ResetToInitialVelocities()
     {
         foreach (InteractableObject obj in controllableObjects)
         {
             obj.ZeroVelocities();
         }
+    }
+
+    void ResetEnergyUsage()
+    {
+        realTimeStart = Time.realtimeSinceStartup;
+
     }
 
     Robot GetActiveRobot()

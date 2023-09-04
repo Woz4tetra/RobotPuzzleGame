@@ -543,7 +543,7 @@ Transform:
   m_GameObject: {fileID: 170409259}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 10, z: -1}
-  m_LocalScale: {x: 20, y: 0.2, z: 1}
+  m_LocalScale: {x: 20, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 702204545}
@@ -648,7 +648,7 @@ Transform:
   m_GameObject: {fileID: 412559872}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -10, y: 0, z: -1}
-  m_LocalScale: {x: 0.2, y: 20, z: 1}
+  m_LocalScale: {x: 1, y: 20, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 702204545}
@@ -704,6 +704,7 @@ MonoBehaviour:
   historyRecordInterval: 0
   forceMagnitude: 10
   fastForceMagnitude: 20
+  maximumSpeed: 3
 --- !u!54 &458680033
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -773,8 +774,8 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 503650608}
   serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 10
+  m_Mass: 0.1
+  m_Drag: 4
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -806,8 +807,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timePassingManager: {fileID: 1327954889}
   historyRecordInterval: 0
-  forceMagnitude: 10
-  fastForceMagnitude: 20
+  forceMagnitude: 1
+  fastForceMagnitude: 2
+  maximumSpeed: 20
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1631,7 +1633,7 @@ Transform:
   m_GameObject: {fileID: 1173795978}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -10, z: -1}
-  m_LocalScale: {x: 20, y: 0.2, z: 1}
+  m_LocalScale: {x: 20, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 702204545}
@@ -2131,6 +2133,7 @@ MonoBehaviour:
   objectiveManager: {fileID: 958583095}
   activeRobot: {fileID: 503650613}
   cameraFollower: {fileID: 519420033}
+  resetSpeedMultiplier: 10
 --- !u!1 &1665550314
 GameObject:
   m_ObjectHideFlags: 0
@@ -2230,7 +2233,7 @@ Transform:
   m_GameObject: {fileID: 1665550314}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 10, y: 0, z: -1}
-  m_LocalScale: {x: 0.2, y: 20, z: 1}
+  m_LocalScale: {x: 1, y: 20, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 702204545}
@@ -2363,7 +2366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeb7097d51c3887b2b25060928aa39a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementDeadzone: 0.1
+  movementDeadzone: 0.01
 --- !u!1 &2013102860
 GameObject:
   m_ObjectHideFlags: 0
@@ -2446,7 +2449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91e57282296ab5e48a759caac9391338, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 10
+  movementSpeed: 1
   interactionRadius: 1
   broadcastRadius: 2
 --- !u!1 &2097982050

@@ -2,8 +2,8 @@ using System;
 using UnityEngine;
 public abstract class InteractableObject : MonoBehaviour
 {
-    [SerializeField] TimePassingManager timePassingManager;
-    [SerializeField] int historyRecordInterval = 10;
+    [SerializeField] protected TimePassingManager timePassingManager;
+    [SerializeField] private int historyRecordInterval = 10;
     protected Rigidbody body;
     protected HistoryManager historyManager;
     void Start()
@@ -19,15 +19,13 @@ public abstract class InteractableObject : MonoBehaviour
 
     void Update()
     {
-        InteractableObjectUpdate();
-    }
-    protected void InteractableObjectUpdate()
-    {
         if (historyRecordInterval <= 0 || Time.frameCount % historyRecordInterval == 0)
         {
             historyManager.Update();
         }
+        InteractableObjectUpdate();
     }
+    abstract protected void InteractableObjectUpdate();
 
     abstract public void Interact(InteractableObjectInput objectInput);
 

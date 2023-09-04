@@ -196,6 +196,7 @@ public class GameSceneManager : MonoBehaviour
             interactionBroadcaster.OnActiveChange(newState == LevelState.Interacting, GetActiveRobot().GetPosition());
             pauseMenuManager.OnActiveChange(newState == LevelState.Paused);
         }
+        Time.timeScale = 1.0f;
         switch (newState)
         {
             case LevelState.Seeking:
@@ -206,6 +207,7 @@ public class GameSceneManager : MonoBehaviour
                 deltaTime = Time.deltaTime;
                 break;
             case LevelState.Interacting:
+                Time.timeScale = 0.0f;
                 interactionBroadcaster.MovePointer(inputManager.GetInteractionStruct());
                 if (interactionBroadcaster.IsInteractionObjectRobot())
                 {
@@ -215,12 +217,15 @@ public class GameSceneManager : MonoBehaviour
             case LevelState.Paused:
                 break;
             case LevelState.Frozen:
+                Time.timeScale = 0.0f;
                 deltaTime = 0.0f;
                 break;
             case LevelState.GameOver:
+                Time.timeScale = 0.0f;
                 // TODO show game over screen
                 break;
             case LevelState.GameWin:
+                Time.timeScale = 0.0f;
                 // TODO show win screen
                 break;
             case LevelState.Reset:

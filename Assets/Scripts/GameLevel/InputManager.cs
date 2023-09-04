@@ -2,6 +2,7 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     [SerializeField] float movementDeadzone = 0.1f;
+
     void Start()
     {
 
@@ -9,8 +10,25 @@ public class InputManager : MonoBehaviour
 
     private Vector2 GetMovementVector()
     {
-        float vertical = Input.GetAxis("Vertical");
-        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = 0.0f;
+        float horizontal = 0.0f;
+        if (Input.GetKey(KeyCode.W))
+        {
+            vertical += 1.0f;
+        }
+        if (Input.GetKey(KeyCode.S))
+        {
+            vertical -= 1.0f;
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            horizontal -= 1.0f;
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            horizontal += 1.0f;
+        }
+
         return new Vector2(horizontal, vertical);
     }
 

@@ -18,7 +18,6 @@ public class HistoryManager
 
     List<ObjectInstant> path = new List<ObjectInstant>();
     List<float> timestamps = new List<float>();
-    ObjectInstant firstInstant = null;
 
     public HistoryManager(Rigidbody body, Transform parentTransform, TimePassingManager timePassingManager, bool isActive)
     {
@@ -27,14 +26,8 @@ public class HistoryManager
         this.timePassingManager = timePassingManager;
         SetActiveControl(isActive);
         SetObjectFreeze(true);
-        SetFirstInstant();
     }
 
-
-    private void SetFirstInstant()
-    {
-        firstInstant = MakeInstant();
-    }
 
     public void Update()
     {

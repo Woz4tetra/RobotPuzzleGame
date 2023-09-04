@@ -26,7 +26,7 @@ public class InteractionBroadcaster : MonoBehaviour
     public void MovePointer(InteractableObjectInput inputs)
     {
         Vector3 moveDirection = new Vector3(inputs.moveDirection.x, inputs.moveDirection.y, 0.0f);
-        moveDirection *= movementSpeed * Time.deltaTime;
+        moveDirection *= movementSpeed * Time.fixedDeltaTime;
         Vector3 newPosition = transform.position + moveDirection;
         if (Vector3.Distance(newPosition, startingPosition) < broadcastRadius)
         {

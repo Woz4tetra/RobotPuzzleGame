@@ -26,6 +26,5 @@ public class TimePassingManager : MonoBehaviour
         {
             duration = 0.0f;
         }
-
     }
 }

@@ -9,6 +9,7 @@ public class SceneManager : MonoBehaviour
             - Robots
             - InanimateObjects
             - StaticObjects
+            - Objectives
         Add child objects to Managers:
             - SceneManager
             - TimePassingManager
@@ -43,7 +44,9 @@ public class SceneManager : MonoBehaviour
         Frozen,
         Moving,
         Seeking,
-        Interacting
+        Interacting,
+        GameOver,
+        GameWin
     };
 
     [SerializeField] private InteractableObject[] controllableObjects;
@@ -94,6 +97,7 @@ public class SceneManager : MonoBehaviour
         else if (state != LevelState.Paused)
         {
             state = GetActiveStateGameActive(state);
+            state = GetActiveStateObjectiveCriteria(state);
         }
         return state;
     }
@@ -127,6 +131,24 @@ public class SceneManager : MonoBehaviour
             {
                 state = LevelState.Frozen;
             }
+        }
+        return state;
+    }
+
+    LevelState GetActiveStateObjectiveCriteria(LevelState prevState)
+    {
+        LevelState state = prevState;
+        if (objectiveManager.IsObjectiveComplete())
+        {
+            state = LevelState.GameWin;
+        }
+        else if (objectiveManager.IsObjectiveFailed())
+        {
+            if (state == LevelState.Seeking && inputManager.GetSeekDirection() < 0)
+            {
+                return state;
+            }
+            state = LevelState.GameOver;
         }
         return state;
     }
@@ -174,15 +196,17 @@ public class SceneManager : MonoBehaviour
             case LevelState.Frozen:
                 deltaTime = 0.0f;
                 break;
+            case LevelState.GameOver:
+                // TODO show game over screen
+                break;
+            case LevelState.GameWin:
+                // TODO show win screen
+                break;
             default:
                 break;
         }
 
         timePassingManager.SeekTime(deltaTime);
-        if (objectiveManager.IsObjectiveComplete())
-        {
-            // TODO show win screen
-        }
     }
 
     Robot GetActiveRobot()

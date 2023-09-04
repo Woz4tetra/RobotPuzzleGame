@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class HistoryManager
 {
@@ -17,6 +18,7 @@ public class HistoryManager
 
     List<ObjectInstant> path = new List<ObjectInstant>();
     List<float> timestamps = new List<float>();
+    ObjectInstant firstInstant = null;
 
     public HistoryManager(Rigidbody body, Transform parentTransform, TimePassingManager timePassingManager, bool isActive)
     {
@@ -25,6 +27,13 @@ public class HistoryManager
         this.timePassingManager = timePassingManager;
         SetActiveControl(isActive);
         SetObjectFreeze(true);
+        SetFirstInstant();
+    }
+
+
+    private void SetFirstInstant()
+    {
+        firstInstant = MakeInstant();
     }
 
     public void Update()
@@ -32,7 +41,7 @@ public class HistoryManager
         bool isTimePassing = IsTimePassing();
         if (!isFrozen)
         {
-            AddInstant(Matrix4x4.TRS(parentTransform.position, parentTransform.rotation, Vector3.one), body.velocity, body.angularVelocity);
+            AddInstant(MakeInstant());
         }
 
         float managerDuration = timePassingManager.GetDuration();
@@ -56,7 +65,7 @@ public class HistoryManager
             {
                 SetObjectFreeze(false);
                 ApplyNearestTemporalVelocity(managerDuration);
-                ClearInstantsAfter(managerDuration);
+                ClearInstantsAfterTime(managerDuration);
             }
         }
         wasTimePassing = isTimePassing;
@@ -129,7 +138,7 @@ public class HistoryManager
         parentTransform.rotation = nearestInstant.pose.GetR();
     }
 
-    void ClearInstantsAfter(float managerDuration)
+    void ClearInstantsAfterTime(float managerDuration)
     {
         (int, int) indices = NearestSearch.findSortedClosest(timestamps.ToArray(), managerDuration);
         if (indices.Item1 == -1 && indices.Item2 == -1)
@@ -139,20 +148,33 @@ public class HistoryManager
         else
         {
             int nearestIndex = Math.Max(indices.Item1, indices.Item2);
-            path.RemoveRange(nearestIndex, path.Count - nearestIndex);
-            timestamps.RemoveRange(nearestIndex, timestamps.Count - nearestIndex);
+            ClearInstantsAtAndAfterIndex(nearestIndex);
         }
     }
 
-    void AddInstant(Matrix4x4 pose, Vector3 velocity, Vector3 angularVelocity)
+    void ClearInstantsAtAndAfterIndex(int index)
     {
-        ObjectInstant poseTimeStamped = new ObjectInstant
+        if (index < 0 || index >= path.Count)
         {
-            pose = pose,
-            velocity = velocity,
-            angularVelocity = angularVelocity
+            return;
+        }
+        Assert.IsTrue(path.Count == timestamps.Count);
+        path.RemoveRange(index, path.Count - index);
+        timestamps.RemoveRange(index, timestamps.Count - index);
+    }
+    ObjectInstant MakeInstant()
+    {
+        return new ObjectInstant
+        {
+            pose = Matrix4x4.TRS(parentTransform.position, parentTransform.rotation, Vector3.one),
+            velocity = body.velocity,
+            angularVelocity = body.angularVelocity
         };
-        path.Add(poseTimeStamped);
+
+    }
+    void AddInstant(ObjectInstant instant)
+    {
+        path.Add(instant);
         timestamps.Add(timePassingManager.GetDuration());
     }
 

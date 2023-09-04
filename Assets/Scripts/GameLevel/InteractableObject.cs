@@ -46,7 +46,7 @@ public abstract class InteractableObject : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Interactive"))
+        if (collision.gameObject.CompareTag(Tags.Robot.Value) || collision.gameObject.CompareTag(Tags.Interactive.Value))
         {
             InteractableObject interactableObject = collision.gameObject.GetComponent<InteractableObject>();
             if (interactableObject != null)

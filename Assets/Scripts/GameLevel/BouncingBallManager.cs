@@ -1,26 +1,29 @@
 using UnityEngine;
 
-public class BouncingBallManager : MonoBehaviour
+namespace GameLevel
 {
-    private Rigidbody body;
-    [SerializeField] private float forceMagnitude = 10.0f;
-    // Start is called before the first frame update
-    void Start()
+    public class BouncingBallManager : MonoBehaviour
     {
-        body = GetComponent<Rigidbody>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Floor"))
+        private Rigidbody body;
+        [SerializeField] private float forceMagnitude = 10.0f;
+        // Start is called before the first frame update
+        void Start()
         {
-            body.AddForce(Vector3.back * forceMagnitude, ForceMode.Impulse);
+            body = GetComponent<Rigidbody>();
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
+
+        void OnCollisionEnter(Collision collision)
+        {
+            if (collision.gameObject.CompareTag("Floor"))
+            {
+                body.AddForce(Vector3.back * forceMagnitude, ForceMode.Impulse);
+            }
         }
     }
 }

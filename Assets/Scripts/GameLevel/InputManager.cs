@@ -2,13 +2,19 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     [SerializeField] float movementDeadzone = 0.1f;
+    [SerializeField] float inputSmoothing = 0.5f;
+    private Vector2 prevMovementVector = Vector2.zero;
 
     void Start()
     {
 
     }
 
-    private Vector2 GetMovementVector()
+    private Vector2 GetMovementVector() {
+        prevMovementVector = Vector2.Lerp(GetMovementVectorRaw(), prevMovementVector, inputSmoothing);
+        return prevMovementVector;
+    }
+    private Vector2 GetMovementVectorRaw()
     {
         float vertical = 0.0f;
         float horizontal = 0.0f;
@@ -49,12 +55,7 @@ public class InputManager : MonoBehaviour
 
     public bool MoveToggled()
     {
-        return GetMovementVector().magnitude > movementDeadzone;
-    }
-
-    public bool FastMovementToggled()
-    {
-        return Input.GetKey(KeyCode.LeftControl);  // TODO reference key mapping
+        return GetMovementVectorRaw().magnitude > movementDeadzone;
     }
 
     public bool IsReset()
@@ -84,8 +85,7 @@ public class InputManager : MonoBehaviour
     {
         return new InteractableObjectInput
         {
-            moveDirection = GetMovementVector(),
-            fastToggle = FastMovementToggled()
+            moveDirection = GetMovementVector()
         };
     }
 }

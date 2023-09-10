@@ -14,13 +14,14 @@ public class TimePassingManager : MonoBehaviour
 
     public void RecordEvent(SceneInstant instant)
     {
-        seekIndex += 1;
-        if (0 <= seekIndex && seekIndex < instants.Count - 1)
-        {
-            instants.RemoveRange(seekIndex, instants.Count - seekIndex);
-        }
-
         instants.Add(instant);
+        seekIndex = instants.Count - 1;
+    }
+
+    public void Unfreeze()
+    {
+        float clearAfterTime = levelDuration;
+        instants.RemoveAll(instant => instant.levelDuration > clearAfterTime);
     }
 
     public void SeekTime(float delta)

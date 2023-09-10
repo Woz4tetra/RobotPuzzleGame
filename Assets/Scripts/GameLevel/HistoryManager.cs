@@ -69,7 +69,10 @@ public class HistoryManager
         else
         {
             int nearestIndex = Math.Max(indices.Item1, indices.Item2);
-            ClearInstantsAtAndAfterIndex(nearestIndex);
+            if (timestamps[nearestIndex] > levelDuration)
+            {
+                ClearInstantsAtAndAfterIndex(nearestIndex);
+            }
         }
     }
 

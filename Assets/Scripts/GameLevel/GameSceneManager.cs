@@ -227,6 +227,7 @@ public class GameSceneManager : MonoBehaviour
     void UnfreezeObjects()
     {
         Debug.Log("Unfreezing objects");
+        timePassingManager.Unfreeze();
         foreach (InteractableObject obj in interactableObjects)
         {
             obj.UnfreezeObject(timePassingManager.GetLevelDuration());

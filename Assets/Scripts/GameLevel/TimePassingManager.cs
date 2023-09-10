@@ -57,6 +57,10 @@ public class TimePassingManager : MonoBehaviour
         {
             newIndex = instants.Count - 1;
         }
+        if (newIndex == seekIndex)
+        {
+            return null;
+        }
         seekIndex = newIndex;
         SceneInstant instant = instants[seekIndex];
         levelDuration = instant.levelDuration;

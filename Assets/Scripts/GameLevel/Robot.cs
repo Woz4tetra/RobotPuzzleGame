@@ -9,7 +9,7 @@ public class Robot : InteractableObject
     [SerializeField] float lowDrag = 0.5f;
     [SerializeField] float highDrag = 10.0f;
     float epsilon = 1e-3f;
-    private float forceDecay = 0.9f;
+    private float forceDecay = 0.7f;
     private float minArrowMagnitude = 0.25f;
     private GameObject activeArrow;
     private bool wasInteracting = false;
@@ -30,7 +30,7 @@ public class Robot : InteractableObject
             {
                 force = forceDecay * force;
             }
-            body.AddForce(force, ForceMode.VelocityChange);
+            body.AddForce(force, ForceMode.Impulse);
         }
         else if (!shouldInteract)
         {
@@ -64,6 +64,7 @@ public class Robot : InteractableObject
     {
         activeArrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
         shouldInteract = true;
+        body.velocity = Vector3.zero;
     }
 
     private void OnExitInteracting(Vector2 moveDirection)

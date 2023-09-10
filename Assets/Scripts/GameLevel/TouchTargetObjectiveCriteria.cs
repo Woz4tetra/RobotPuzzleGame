@@ -7,9 +7,9 @@ public class TouchTargetObjectiveCriteria : ObjectiveCriteria
     void Update()
     {
         bool isMet = IsCriteriaMet();
-        if (!isMet)
+        if (!isMet && timePassingManager.IsAtFrontier())
         {
-            clearTime = -1.0f;
+            ResetCriteria();
         }
         VisualsObject.gameObject.SetActive(!isMet);
     }
@@ -38,6 +38,11 @@ public class TouchTargetObjectiveCriteria : ObjectiveCriteria
             }
             tf = tf.parent;
         }
+    }
+
+    void ResetCriteria()
+    {
+        clearTime = -1.0f;
     }
 
     void OnTriggerEnter(Collider collision)

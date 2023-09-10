@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameSceneManager : MonoBehaviour
 {
@@ -47,6 +48,7 @@ public class GameSceneManager : MonoBehaviour
         Paused,
         Frozen,
         Moving,
+        Reset,
         GameOver,
         GameWin
     };
@@ -89,6 +91,10 @@ public class GameSceneManager : MonoBehaviour
         if (prevState == LevelState.Start)
         {
             state = LevelState.Frozen;
+        }
+        else if (inputManager.IsReset())
+        {
+            state = LevelState.Reset;
         }
         else if (inputManager.PauseToggled())
         {
@@ -188,8 +194,17 @@ public class GameSceneManager : MonoBehaviour
             case LevelState.Frozen:
                 FreezeObjects(GetActiveRobot());
                 break;
+            case LevelState.GameOver:
+                FreezeObjects(GetActiveRobot());
+                break;
+            case LevelState.GameWin:
+                FreezeObjects(GetActiveRobot());
+                break;
             case LevelState.Paused:
                 pauseMenuManager.OnActiveChange(true);
+                break;
+            case LevelState.Reset:
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                 break;
             default:
                 break;

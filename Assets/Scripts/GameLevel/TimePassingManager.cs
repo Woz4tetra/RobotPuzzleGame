@@ -12,6 +12,15 @@ public class TimePassingManager : MonoBehaviour
         return levelDuration;
     }
 
+    public bool IsAtFrontier()
+    {
+        if (instants.Count == 0)
+        {
+            return true;
+        }
+        return seekIndex == instants.Count - 1;
+    }
+
     public void RecordEvent(SceneInstant instant)
     {
         instants.Add(instant);

@@ -35,6 +35,10 @@ public abstract class InteractableObject : MonoBehaviour
     {
         body.isKinematic = false;
         ObjectInstant instant = historyManager.UnfreezeObject(levelDuration);
+        if (instant == null)
+        {
+            return;
+        }
         Debug.Log($"Unfreezing object {gameObject.name}");
         body.velocity = instant.velocity;
         body.angularVelocity = instant.angularVelocity;
@@ -43,6 +47,10 @@ public abstract class InteractableObject : MonoBehaviour
     public void JumpToInstant(float levelDuration)
     {
         ObjectInstant instant = historyManager.JumpToInstant(levelDuration);
+        if (instant == null)
+        {
+            return;
+        }
         Debug.Log($"Jumping object {gameObject.name} to {instant.pose.GetT()}");
         transform.position = instant.pose.GetT();
         transform.rotation = instant.pose.GetR();

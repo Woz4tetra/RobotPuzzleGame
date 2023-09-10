@@ -16,7 +16,7 @@ public class TouchTargetObjectiveCriteria : ObjectiveCriteria
 
     override public bool IsCriteriaMet()
     {
-        return 0.0f <= clearTime && clearTime <= timePassingManager.GetDuration();
+        return 0.0f <= clearTime && clearTime <= timePassingManager.GetLevelDuration();
     }
 
     private bool InTagInTree(GameObject obj, string tag)
@@ -44,7 +44,7 @@ public class TouchTargetObjectiveCriteria : ObjectiveCriteria
     {
         if (InTagInTree(collision.gameObject, Tags.Robot.Value))
         {
-            clearTime = timePassingManager.GetDuration();
+            clearTime = timePassingManager.GetLevelDuration();
         }
     }
 }

@@ -1,30 +1,59 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TimePassingManager : MonoBehaviour
 {
-    private float duration = 0.0f;
-    void Start()
-    {
+    private float levelDuration = 0.0f;
+    private int seekIndex = 0;
+    private List<SceneInstant> instants = new List<SceneInstant>();
 
+    public float GetLevelDuration()
+    {
+        return levelDuration;
     }
 
-    void Update()
+    public void RecordEvent(SceneInstant instant)
     {
+        if (seekIndex >= instants.Count)
+        {
+            seekIndex = instants.Count - 1;
+        }
+        if (0 <= seekIndex && instants.Count > 0)
+        {
+            instants.RemoveRange(seekIndex, instants.Count - seekIndex);
+        }
 
+        instants.Add(instant);
+        seekIndex = instants.Count - 1;
     }
-
-    public float GetDuration()
-    {
-        return duration;
-    }
-
 
     public void SeekTime(float delta)
     {
-        duration += delta;
-        if (duration < 0.0f)
+        levelDuration += delta;
+        if (levelDuration < 0.0f)
         {
-            duration = 0.0f;
+            levelDuration = 0.0f;
         }
+    }
+
+    public SceneInstant JumpToEvent(int eventDelta)
+    {
+        if (instants.Count == 0)
+        {
+            return null;
+        }
+        int newIndex = eventDelta + seekIndex;
+        if (newIndex < 0)
+        {
+            newIndex = 0;
+        }
+        else if (newIndex >= instants.Count)
+        {
+            newIndex = instants.Count - 1;
+        }
+        seekIndex = newIndex;
+        SceneInstant instant = instants[seekIndex];
+        levelDuration = instant.levelDuration;
+        return instant;
     }
 }

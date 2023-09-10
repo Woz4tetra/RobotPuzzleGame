@@ -276,8 +276,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12c71f8f1f2f88b7d86d20b274f9e4a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timePassingManager: {fileID: 1327954889}
-  historyRecordInterval: 3
 --- !u!54 &54780284
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -992,8 +990,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12c71f8f1f2f88b7d86d20b274f9e4a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timePassingManager: {fileID: 1327954889}
-  historyRecordInterval: 0
 --- !u!1 &702204544
 GameObject:
   m_ObjectHideFlags: 0
@@ -1748,6 +1744,10 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 356866120864297921, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 356866120864297921, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
       propertyPath: controllableObjects.Array.data[0]
       value: 
       objectReference: {fileID: 503650613}
@@ -1755,6 +1755,26 @@ PrefabInstance:
       propertyPath: controllableObjects.Array.data[1]
       value: 
       objectReference: {fileID: 458680032}
+    - target: {fileID: 356866120864297921, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[0]
+      value: 
+      objectReference: {fileID: 688162579}
+    - target: {fileID: 356866120864297921, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[1]
+      value: 
+      objectReference: {fileID: 2140329863}
+    - target: {fileID: 356866120864297921, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[2]
+      value: 
+      objectReference: {fileID: 503650613}
+    - target: {fileID: 356866120864297921, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[3]
+      value: 
+      objectReference: {fileID: 458680032}
+    - target: {fileID: 356866120864297921, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[4]
+      value: 
+      objectReference: {fileID: 54780282}
     - target: {fileID: 3983926947547834674, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
       propertyPath: timeLimit
       value: 15
@@ -1820,7 +1840,8 @@ PrefabInstance:
       value: Managers
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7967923216523020621, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
@@ -2179,5 +2200,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12c71f8f1f2f88b7d86d20b274f9e4a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timePassingManager: {fileID: 1327954889}
-  historyRecordInterval: 0

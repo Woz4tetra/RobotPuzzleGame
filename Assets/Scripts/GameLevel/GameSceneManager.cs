@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class GameSceneManager : MonoBehaviour
 {
@@ -16,7 +16,6 @@ public class GameSceneManager : MonoBehaviour
             - TimePassingManager
             - InputManager
             - PauseMenuManager
-            - InteractionBroadcaster
             - ObjectiveManager
         Add child objects to Robots:
             - Any robots in the scene (game objects with Robot script attached)
@@ -36,8 +35,6 @@ public class GameSceneManager : MonoBehaviour
             - Point TimePassingManager to TimePassingManager object
             - Point InputManager to InputManager object
             - Point PauseMenuManager to PauseMenuManager object
-            - Point InteractionBroadcaster to InteractionBroadcaster object
-                - Set to active to false (this will be set to true when the player presses the interact button)
             - Point ObjectiveManager to ObjectiveManager object
             - Point Active Robot to initial Robot
             - Point CameraFollower to CameraFollower object
@@ -46,48 +43,40 @@ public class GameSceneManager : MonoBehaviour
      */
     public enum LevelState
     {
+        Start,
         Paused,
         Frozen,
         Moving,
-        Seeking,
-        Interacting,
         GameOver,
-        GameWin,
-        Reset
+        GameWin
     };
 
-    [SerializeField] private InteractableObject[] controllableObjects;
+    [SerializeField] private InteractableObject[] interactableObjects;
     [SerializeField] private TimePassingManager timePassingManager;
     [SerializeField] private InputManager inputManager;
     [SerializeField] private PauseMenuManager pauseMenuManager;
-    [SerializeField] private InteractionBroadcaster interactionBroadcaster;
     [SerializeField] private ObjectiveManager objectiveManager;
     [SerializeField] private Robot activeRobot;
     [SerializeField] private CameraObjectFollower cameraFollower;
-    [SerializeField] private float resetSpeedMultiplier = 10.0f;
+    private List<Robot> robots = new List<Robot>();
 
     private int labelBorderSize = 5;
 
-    private LevelState levelState = LevelState.Frozen;
+    private LevelState levelState = LevelState.Start;
     private LevelState beforePauseState = LevelState.Frozen;
-    private float realTimeStart = 0.0f;
-    private Robot initialActiveRobot;
 
     void Start()
     {
-        initialActiveRobot = activeRobot;
-        activeRobot.SetActive(true);
-        interactionBroadcaster.SetInteractableObjects(controllableObjects);
-        realTimeStart = Time.realtimeSinceStartup;
-        ResetToInitialVelocities();
+        foreach (InteractableObject obj in interactableObjects)
+        {
+            if (IsObjectRobot(obj))
+            {
+                robots.Add(obj as Robot);
+            }
+        }
     }
 
     void Update()
-    {
-        StateMachineUpdate();
-    }
-
-    void StateMachineUpdate()
     {
         LevelState newState = GetActiveState(levelState);
         StateUpdate(newState, levelState);
@@ -99,79 +88,38 @@ public class GameSceneManager : MonoBehaviour
         LevelState state = prevState;
         if (inputManager.PauseToggled())
         {
-            if (state == LevelState.Paused)
+            if (prevState == LevelState.Paused)
             {
                 state = beforePauseState;
             }
             else
             {
-                beforePauseState = state;
+                beforePauseState = prevState;
                 state = LevelState.Paused;
             }
         }
-        else if (state != LevelState.Paused)
+        else if (prevState != LevelState.Paused)
         {
-            if (inputManager.IsReset())
+            if (prevState == LevelState.Start)
             {
-                state = LevelState.Reset;
+                state = LevelState.Frozen;
             }
-            if (state == LevelState.Reset && timePassingManager.GetDuration() > 0.0f)
+            else if (objectiveManager.IsObjectiveComplete())
             {
-                return state;
+                state = LevelState.GameWin;
             }
-            state = GetActiveStateGameActive(state);
-            state = GetActiveStateObjectiveCriteria(state);
-        }
-        return state;
-    }
-
-    LevelState GetActiveStateGameActive(LevelState prevState)
-    {
-        LevelState state = prevState;
-        if (inputManager.InteractToggled() && state != LevelState.Moving)
-        {
-            if (state == LevelState.Interacting &&
-                interactionBroadcaster.IsInteractionObjectRobotOrNull())
+            else if (objectiveManager.IsObjectiveFailed())
+            {
+                state = LevelState.GameOver;
+            }
+            else if (GetActiveRobot().IsInteractionDone())
             {
                 state = LevelState.Frozen;
             }
             else
-            {
-                state = LevelState.Interacting;
-            }
-        }
-        else if (state != LevelState.Interacting)
-        {
-            if (inputManager.SeekToggled())
-            {
-                state = LevelState.Seeking;
-            }
-            else if (inputManager.MoveToggled())
             {
                 state = LevelState.Moving;
             }
-            else
-            {
-                state = LevelState.Frozen;
-            }
-        }
-        return state;
-    }
-
-    LevelState GetActiveStateObjectiveCriteria(LevelState prevState)
-    {
-        LevelState state = prevState;
-        if (objectiveManager.IsObjectiveComplete())
-        {
-            state = LevelState.GameWin;
-        }
-        else if (objectiveManager.IsObjectiveFailed())
-        {
-            if (state == LevelState.Seeking && inputManager.GetSeekDirection() < 0)
-            {
-                return state;
-            }
-            state = LevelState.GameOver;
         }
         return state;
     }
@@ -183,51 +131,39 @@ public class GameSceneManager : MonoBehaviour
             OnStateExit(prevState);
             OnStateEnter(newState);
         }
-        Time.timeScale = 1.0f;
         float deltaTime = 0.0f;
         switch (newState)
         {
-            case LevelState.Seeking:
-                deltaTime = inputManager.GetSeekDirection() * Time.deltaTime;
-                if (timePassingManager.GetDuration() + deltaTime > 0.0f)
+            case LevelState.Moving:
+                deltaTime = Time.deltaTime;
+                GetActiveRobot().Interact(inputManager.GetInteractionStruct());
+                break;
+            case LevelState.Paused:
+                break;
+            case LevelState.Frozen:
+                int seekDirection = inputManager.GetSeekDirection();
+                Robot robot = GetActiveRobot();
+                InteractableObject switchedRobot;
+                if (seekDirection != 0)
                 {
-                    GetActiveRobot().Coast();
+                    switchedRobot = JumpToEvent(seekDirection);
                 }
                 else
                 {
-                    ResetToInitialVelocities();
-                    ResetEnergyUsage();
+                    switchedRobot = robot.Interact(inputManager.GetInteractionStruct());
                 }
-                break;
-            case LevelState.Moving:
-                GetActiveRobot().Interact(inputManager.GetInteractionStruct());
-                deltaTime = Time.deltaTime;
-                break;
-            case LevelState.Interacting:
-                FreezePhysics();  // put this in every case needed. Putting it at the end breaks some internal ordering
-                interactionBroadcaster.MovePointer(inputManager.GetInteractionStruct());
-                if (interactionBroadcaster.IsInteractionObjectRobot())
+
+                if (switchedRobot != robot && IsObjectRobot(switchedRobot))
                 {
-                    SetActiveRobot((Robot)interactionBroadcaster.GetInteractionObject());
+                    SetActiveRobot(switchedRobot as Robot);
+                    cameraFollower.SetFollowObject(switchedRobot.gameObject);
                 }
-                break;
-            case LevelState.Paused:
-                FreezePhysics();
-                break;
-            case LevelState.Frozen:
-                FreezePhysics();
                 break;
             case LevelState.GameOver:
-                FreezePhysics();
                 // TODO show game over screen
                 break;
             case LevelState.GameWin:
-                FreezePhysics();
                 // TODO show win screen
-                break;
-            case LevelState.Reset:
-                deltaTime = -Time.deltaTime * resetSpeedMultiplier;
-                SetActiveRobot(initialActiveRobot);
                 break;
             default:
                 break;
@@ -236,53 +172,78 @@ public class GameSceneManager : MonoBehaviour
         timePassingManager.SeekTime(deltaTime);
     }
 
+    bool IsObjectRobot(InteractableObject obj)
+    {
+        return typeof(Robot).IsInstanceOfType(obj);
+    }
+
     void OnStateEnter(LevelState state)
     {
         switch (state)
         {
-            case LevelState.Seeking: goto case LevelState.Frozen;
-            case LevelState.Moving: goto case LevelState.Frozen;
-            case LevelState.Paused: goto case LevelState.Frozen;
+            case LevelState.Moving:
+                UnfreezeObjects();
+                break;
             case LevelState.Frozen:
-                cameraFollower.SetFollowObject(GetActiveRobot().gameObject);
+                FreezeObjects(GetActiveRobot());
                 break;
-            case LevelState.Interacting:
-                cameraFollower.SetFollowObject(interactionBroadcaster.gameObject);
-                break;
-            case LevelState.Reset:
+            case LevelState.Paused:
+                pauseMenuManager.OnActiveChange(true);
                 break;
             default:
                 break;
         }
-        interactionBroadcaster.OnActiveChange(state == LevelState.Interacting, GetActiveRobot().GetPosition());
-        pauseMenuManager.OnActiveChange(state == LevelState.Paused);
+    }
+
+    void FreezeObjects(Robot activeRobot)
+    {
+        Debug.Log("Freezing objects");
+        timePassingManager.RecordEvent(new SceneInstant
+        {
+            activeRobot = activeRobot,
+            levelDuration = timePassingManager.GetLevelDuration()
+        });
+        foreach (InteractableObject obj in interactableObjects)
+        {
+            obj.FreezeObject(timePassingManager.GetLevelDuration());
+        }
+    }
+
+    void UnfreezeObjects()
+    {
+        Debug.Log("Unfreezing objects");
+        foreach (InteractableObject obj in interactableObjects)
+        {
+            obj.UnfreezeObject(timePassingManager.GetLevelDuration());
+        }
+    }
+
+    Robot JumpToEvent(int seekDirection)
+    {
+        Debug.Log($"Jumping in {seekDirection} direction");
+        SceneInstant instant = timePassingManager.JumpToEvent(seekDirection);
+        if (instant == null)
+        {
+            return GetActiveRobot();
+        }
+        Debug.Log($"Jumping to {timePassingManager.GetLevelDuration()}");
+        foreach (InteractableObject obj in interactableObjects)
+        {
+            obj.JumpToInstant(timePassingManager.GetLevelDuration());
+        }
+        return instant.activeRobot;
     }
 
     void OnStateExit(LevelState state)
     {
         switch (state)
         {
-            case LevelState.Reset:
-                ResetToInitialVelocities();
-                ResetEnergyUsage();
+            case LevelState.Paused:
+                pauseMenuManager.OnActiveChange(false);
                 break;
             default:
                 break;
         }
-
-    }
-
-    void ResetToInitialVelocities()
-    {
-        foreach (InteractableObject obj in controllableObjects)
-        {
-            obj.ZeroVelocities();
-        }
-    }
-
-    void ResetEnergyUsage()
-    {
-        realTimeStart = Time.realtimeSinceStartup;
 
     }
 
@@ -291,38 +252,15 @@ public class GameSceneManager : MonoBehaviour
         return activeRobot;
     }
 
-    void FreezePhysics()
-    {
-        Time.timeScale = 0.0f;
-    }
-
     void SetActiveRobot(Robot robot)
     {
-        foreach (InteractableObject obj in controllableObjects)
-        {
-            if (!typeof(Robot).IsInstanceOfType(obj))
-            {
-                continue;
-            }
-            obj.SetActive(obj == robot);
-            if (obj == robot)
-            {
-                activeRobot = robot;
-            }
-        }
-    }
-
-    public float GetEnergySpent()
-    {
-        // "Energy" is really just the time spent in the level
-        return Time.realtimeSinceStartup - realTimeStart;
+        activeRobot = robot;
     }
 
     void OnGUI()
     {
         string text = "";
-        text += $"Duration {timePassingManager.GetDuration():0.00} s\n";
-        text += $"Energy {GetEnergySpent():0.00} mJ\n";
+        text += $"Duration {timePassingManager.GetLevelDuration():0.00} s\n";
         text += $"State {levelState}\n";
         GUIStyle labelStyle = new GUIStyle
         {

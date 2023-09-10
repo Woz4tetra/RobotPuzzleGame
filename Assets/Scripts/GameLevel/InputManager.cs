@@ -1,16 +1,11 @@
 using UnityEngine;
 public class InputManager : MonoBehaviour
 {
-    [SerializeField] float movementDeadzone = 0.1f;
     [SerializeField] float inputSmoothing = 0.5f;
     private Vector2 prevMovementVector = Vector2.zero;
 
-    void Start()
+    private Vector2 GetMovementVector()
     {
-
-    }
-
-    private Vector2 GetMovementVector() {
         prevMovementVector = Vector2.Lerp(GetMovementVectorRaw(), prevMovementVector, inputSmoothing);
         return prevMovementVector;
     }
@@ -43,21 +38,6 @@ public class InputManager : MonoBehaviour
         return Input.GetKeyDown(KeyCode.Escape);  // TODO reference key mapping
     }
 
-    public bool InteractToggled()
-    {
-        return Input.GetKeyDown(KeyCode.F);  // TODO reference key mapping
-    }
-
-    public bool SeekToggled()
-    {
-        return GetSeekDirection() != 0;
-    }
-
-    public bool MoveToggled()
-    {
-        return GetMovementVectorRaw().magnitude > movementDeadzone;
-    }
-
     public bool IsReset()
     {
         return Input.GetKeyDown(KeyCode.R);  // TODO reference key mapping
@@ -65,15 +45,15 @@ public class InputManager : MonoBehaviour
 
     public int GetSeekDirection()
     {
-        bool isForwarding = Input.GetKey(KeyCode.E);  // TODO reference key mapping
-        bool isReversing = Input.GetKey(KeyCode.Q);
-        if (isForwarding)
-        {
-            return 1;
-        }
-        else if (isReversing)
+        bool isForwarding = Input.GetKeyDown(KeyCode.E);  // TODO reference key mapping
+        bool isReversing = Input.GetKeyDown(KeyCode.Q);
+        if (isReversing)
         {
             return -1;
+        }
+        else if (isForwarding)
+        {
+            return 1;
         }
         else
         {

@@ -1,68 +1,17 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 public abstract class InteractableObject : MonoBehaviour
 {
-    [SerializeField] protected TimePassingManager timePassingManager;
-    [SerializeField] private int historyRecordInterval = 10;
     protected Rigidbody body;
-    protected HistoryManager historyManager;
+    protected HistoryManager historyManager = new HistoryManager();
+
     void Start()
     {
-        InteractableObjectStart();
-    }
-
-    protected void InteractableObjectStart()
-    {
         body = GetComponent<Rigidbody>();
-        historyManager = new HistoryManager(body, transform, timePassingManager, false);
     }
 
-    void Update()
-    {
-        if (historyRecordInterval <= 0 || Time.frameCount % historyRecordInterval == 0)
-        {
-            historyManager.Update();
-        }
-        InteractableObjectUpdate();
-    }
-    abstract protected void InteractableObjectUpdate();
-
-    abstract public void Interact(InteractableObjectInput objectInput);
-    abstract public void Coast();
-
-    abstract public void SetActive(bool active);
-    abstract public bool IsActive();
-
-    public Vector3 GetPosition()
-    {
-        return transform.position;
-    }
-
-    public void OnExternalCollisionEnter(GameObject collidingObject)
-    {
-        historyManager.NewMotionCallback();
-    }
-
-    public void ZeroVelocities()
-    {
-        if (!body.isKinematic)
-        {
-            body.velocity = Vector3.zero;
-            body.angularVelocity = Vector3.zero;
-        }
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag(Tags.Robot.Value) || collision.gameObject.CompareTag(Tags.Interactive.Value))
-        {
-            InteractableObject interactableObject = collision.gameObject.GetComponent<InteractableObject>();
-            if (interactableObject != null)
-            {
-                interactableObject.OnExternalCollisionEnter(gameObject);
-            }
-        }
-    }
+    abstract public InteractableObject Interact(InteractableObjectInput objectInput);
 
     void OnDrawGizmos()
     {
@@ -71,5 +20,28 @@ public abstract class InteractableObject : MonoBehaviour
             ReadOnlySpan<Vector3> positions = historyManager.getPositions().ToArray();
             Gizmos.DrawLineStrip(positions, false);
         }
+    }
+
+    public void FreezeObject(float levelDuration)
+    {
+        historyManager.RecordEvent(new ObjectInstant(
+            transform.position, transform.rotation, body.velocity, body.angularVelocity
+        ), levelDuration);
+        body.isKinematic = true;
+    }
+
+    public void UnfreezeObject(float levelDuration)
+    {
+        body.isKinematic = false;
+        ObjectInstant instant = historyManager.UnfreezeObject(levelDuration);
+        body.velocity = instant.velocity;
+        body.angularVelocity = instant.angularVelocity;
+    }
+
+    public void JumpToInstant(float levelDuration)
+    {
+        ObjectInstant instant = historyManager.JumpToInstant(levelDuration);
+        transform.position = instant.pose.GetT();
+        transform.rotation = instant.pose.GetR();
     }
 }

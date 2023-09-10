@@ -6,6 +6,20 @@ public class ObjectInstant
     public Vector3 velocity;
     public Vector3 angularVelocity;
 
+    public ObjectInstant()
+    {
+        pose = Matrix4x4.identity;
+        velocity = Vector3.zero;
+        angularVelocity = Vector3.zero;
+    }
+
+    public ObjectInstant(Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 angularVelocity)
+    {
+        pose = Matrix4x4.TRS(position, rotation, Vector3.one);
+        this.velocity = velocity;
+        this.angularVelocity = angularVelocity;
+    }
+
     /**
         interpolation is 0..1
         instant1 is at time 0

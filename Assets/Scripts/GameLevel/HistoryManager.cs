@@ -6,89 +6,35 @@ using UnityEngine.Assertions;
 
 public class HistoryManager
 {
-    private bool wasTimePassing = false;
-    private float prevFrozenTime = 0.0f;
-    private bool isFrozen = false;
-    private readonly Rigidbody body;
-    private readonly TimePassingManager timePassingManager;
-    private readonly Transform parentTransform;
-    private bool isActivelyControlled = false;
-    private float prevDuration = 0.0f;
-    private float timeFrontier = 0.0f;
-
     List<ObjectInstant> path = new List<ObjectInstant>();
     List<float> timestamps = new List<float>();
 
-    public HistoryManager(Rigidbody body, Transform parentTransform, TimePassingManager timePassingManager, bool isActive)
+    public HistoryManager()
     {
-        this.body = body;
-        this.parentTransform = parentTransform;
-        this.timePassingManager = timePassingManager;
-        SetActiveControl(isActive);
-        SetObjectFreeze(true);
+
     }
 
 
-    public void Update()
+    public void RecordEvent(ObjectInstant instant, float levelDuration)
     {
-        bool isTimePassing = IsTimePassing();
-        if (!isFrozen)
-        {
-            AddInstant(MakeInstant());
-        }
-
-        float managerDuration = timePassingManager.GetDuration();
-        if (!isTimePassing)
-        {
-            if (prevFrozenTime != managerDuration)
-            {
-                prevFrozenTime = managerDuration;
-                ApplyNearestTemporalPose(managerDuration);
-            }
-        }
-
-        if (wasTimePassing != isTimePassing)
-        {
-            if (!isTimePassing)
-            {
-                SetObjectFreeze(true);
-                prevFrozenTime = managerDuration;
-            }
-            else
-            {
-                SetObjectFreeze(false);
-                ApplyNearestTemporalVelocity(managerDuration);
-                ClearInstantsAfterTime(managerDuration);
-            }
-        }
-        wasTimePassing = isTimePassing;
+        AddInstant(instant, levelDuration);
     }
 
-    public void SetActiveControl(bool isActive)
+    public ObjectInstant JumpToInstant(float levelDuration)
     {
-        isActivelyControlled = isActive;
-        if (isActivelyControlled)
-        {
-            body.isKinematic = false;
-        }
-    }
-    public bool IsControlActive()
-    {
-        return isActivelyControlled;
+        return GetNearestInstant(levelDuration);
     }
 
-    void SetObjectFreeze(bool isFrozen)
+    public ObjectInstant UnfreezeObject(float levelDuration)
     {
-        this.isFrozen = isFrozen;
-        if (!isActivelyControlled)
-        {
-            body.isKinematic = isFrozen;
-        }
+        ObjectInstant instant = GetNearestInstant(levelDuration);
+        ClearInstantsAfterTime(levelDuration);
+        return instant;
     }
 
-    ObjectInstant GetNearestInstant(float managerDuration)
+    ObjectInstant GetNearestInstant(float levelDuration)
     {
-        (int, int) indices = NearestSearch.findSortedClosest(timestamps.ToArray(), managerDuration);
+        (int, int) indices = NearestSearch.findSortedClosest(timestamps.ToArray(), levelDuration);
 
         if (indices.Item1 == -1 && indices.Item2 == -1)
         {
@@ -107,37 +53,15 @@ public class HistoryManager
             else
             {
                 float startTime = timestamps[indices.Item1];
-                float interval = (managerDuration - startTime) / (timestamps[indices.Item2] - startTime);
+                float interval = (levelDuration - startTime) / (timestamps[indices.Item2] - startTime);
                 return ObjectInstant.Slerp(path[indices.Item1], path[indices.Item2], interval);
             }
         }
     }
 
-    void ApplyNearestTemporalVelocity(float managerDuration)
+    void ClearInstantsAfterTime(float levelDuration)
     {
-        ObjectInstant nearestInstant = GetNearestInstant(managerDuration);
-        if (nearestInstant == null)
-        {
-            return;
-        }
-        body.velocity = nearestInstant.velocity;
-        body.angularVelocity = nearestInstant.angularVelocity;
-    }
-
-    void ApplyNearestTemporalPose(float managerDuration)
-    {
-        ObjectInstant nearestInstant = GetNearestInstant(managerDuration);
-        if (nearestInstant == null)
-        {
-            return;
-        }
-        parentTransform.position = nearestInstant.pose.GetT();
-        parentTransform.rotation = nearestInstant.pose.GetR();
-    }
-
-    void ClearInstantsAfterTime(float managerDuration)
-    {
-        (int, int) indices = NearestSearch.findSortedClosest(timestamps.ToArray(), managerDuration);
+        (int, int) indices = NearestSearch.findSortedClosest(timestamps.ToArray(), levelDuration);
         if (indices.Item1 == -1 && indices.Item2 == -1)
         {
             return;
@@ -159,48 +83,15 @@ public class HistoryManager
         path.RemoveRange(index, path.Count - index);
         timestamps.RemoveRange(index, timestamps.Count - index);
     }
-    ObjectInstant MakeInstant()
-    {
-        return new ObjectInstant
-        {
-            pose = Matrix4x4.TRS(parentTransform.position, parentTransform.rotation, Vector3.one),
-            velocity = body.velocity,
-            angularVelocity = body.angularVelocity
-        };
 
-    }
-    void AddInstant(ObjectInstant instant)
+    void AddInstant(ObjectInstant instant, float levelDuration)
     {
         path.Add(instant);
-        timestamps.Add(timePassingManager.GetDuration());
+        timestamps.Add(levelDuration);
     }
 
     public List<Vector3> getPositions()
     {
         return path.ConvertAll(pose => pose.pose.GetT());
-    }
-
-    bool IsTimePassing()
-    {
-        float currentDuration = timePassingManager.GetDuration();
-        float delta = currentDuration - prevDuration;
-        prevDuration = currentDuration;
-        bool movingIntoFuture = timePassingManager.GetDuration() >= timeFrontier;
-        if (movingIntoFuture)
-        {
-            timeFrontier = currentDuration;
-        }
-        return delta > 0.0f && movingIntoFuture;
-    }
-
-
-    public void NewMotionCallback()
-    {
-        RecordTimeFrontier();
-    }
-
-    private void RecordTimeFrontier()
-    {
-        timeFrontier = timePassingManager.GetDuration();
     }
 }

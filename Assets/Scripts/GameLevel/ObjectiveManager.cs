@@ -32,6 +32,6 @@ public class ObjectiveManager : MonoBehaviour
 
     public bool IsObjectiveFailed()
     {
-        return timePassingManager.GetDuration() > timeLimit;
+        return timePassingManager.GetLevelDuration() > timeLimit;
     }
 }

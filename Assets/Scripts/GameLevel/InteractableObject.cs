@@ -41,6 +41,7 @@ public abstract class InteractableObject : MonoBehaviour
     public void JumpToInstant(float levelDuration)
     {
         ObjectInstant instant = historyManager.JumpToInstant(levelDuration);
+        Debug.Log($"name: {gameObject.name}, instant: {instant.pose.GetT()}");
         transform.position = instant.pose.GetT();
         transform.rotation = instant.pose.GetR();
     }

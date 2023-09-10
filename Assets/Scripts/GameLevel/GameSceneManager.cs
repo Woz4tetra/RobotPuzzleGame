@@ -86,7 +86,11 @@ public class GameSceneManager : MonoBehaviour
     LevelState GetActiveState(LevelState prevState)
     {
         LevelState state = prevState;
-        if (inputManager.PauseToggled())
+        if (prevState == LevelState.Start)
+        {
+            state = LevelState.Frozen;
+        }
+        else if (inputManager.PauseToggled())
         {
             if (prevState == LevelState.Paused)
             {
@@ -100,11 +104,7 @@ public class GameSceneManager : MonoBehaviour
         }
         else if (prevState != LevelState.Paused)
         {
-            if (prevState == LevelState.Start)
-            {
-                state = LevelState.Frozen;
-            }
-            else if (objectiveManager.IsObjectiveComplete())
+            if (objectiveManager.IsObjectiveComplete())
             {
                 state = LevelState.GameWin;
             }
@@ -112,7 +112,7 @@ public class GameSceneManager : MonoBehaviour
             {
                 state = LevelState.GameOver;
             }
-            else if (GetActiveRobot().IsInteractionDone())
+            else if (GetActiveRobot().ShouldInteract())
             {
                 state = LevelState.Frozen;
             }
@@ -179,6 +179,7 @@ public class GameSceneManager : MonoBehaviour
 
     void OnStateEnter(LevelState state)
     {
+        Debug.Log($"Entering state {state}");
         switch (state)
         {
             case LevelState.Moving:
@@ -193,6 +194,20 @@ public class GameSceneManager : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    void OnStateExit(LevelState state)
+    {
+        Debug.Log($"Exiting state {state}");
+        switch (state)
+        {
+            case LevelState.Paused:
+                pauseMenuManager.OnActiveChange(false);
+                break;
+            default:
+                break;
+        }
+
     }
 
     void FreezeObjects(Robot activeRobot)
@@ -232,19 +247,6 @@ public class GameSceneManager : MonoBehaviour
             obj.JumpToInstant(timePassingManager.GetLevelDuration());
         }
         return instant.activeRobot;
-    }
-
-    void OnStateExit(LevelState state)
-    {
-        switch (state)
-        {
-            case LevelState.Paused:
-                pauseMenuManager.OnActiveChange(false);
-                break;
-            default:
-                break;
-        }
-
     }
 
     Robot GetActiveRobot()

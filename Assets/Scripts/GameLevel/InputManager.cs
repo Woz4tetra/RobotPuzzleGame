@@ -1,36 +1,38 @@
 using UnityEngine;
 public class InputManager : MonoBehaviour
 {
-    [SerializeField] float inputSmoothing = 0.5f;
-    private Vector2 prevMovementVector = Vector2.zero;
-
+    private bool prevButtonState = false;
+    private Vector2 prevClickPosition = Vector2.zero;
     private Vector2 GetMovementVector()
     {
-        prevMovementVector = Vector2.Lerp(GetMovementVectorRaw(), prevMovementVector, inputSmoothing);
-        return prevMovementVector;
-    }
-    private Vector2 GetMovementVectorRaw()
-    {
-        float vertical = 0.0f;
-        float horizontal = 0.0f;
-        if (Input.GetKey(KeyCode.W))
+        bool buttonState = GetMouseDown();
+        Vector2 mousePosition = Input.mousePosition;
+        if (buttonState != prevButtonState)
         {
-            vertical += 1.0f;
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            vertical -= 1.0f;
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            horizontal -= 1.0f;
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            horizontal += 1.0f;
+            prevButtonState = buttonState;
+            if (buttonState)
+            {
+                prevClickPosition = mousePosition;
+            }
         }
 
-        return new Vector2(horizontal, vertical);
+        if (buttonState)
+        {
+            Vector2 rawDirection = mousePosition - prevClickPosition;
+            Vector2 scaledDirection = new Vector2(rawDirection.x / Screen.width, rawDirection.y / Screen.height);
+            float x = Mathf.Max(-1.0f, Mathf.Min(scaledDirection.x, 1.0f));
+            float y = Mathf.Max(-1.0f, Mathf.Min(scaledDirection.y, 1.0f));
+            return new Vector2(x, y);
+        }
+        else
+        {
+            return Vector2.zero;
+        }
+    }
+
+    private bool GetMouseDown()
+    {
+        return Input.GetButton("Fire1");
     }
 
     public bool PauseToggled()
@@ -63,9 +65,9 @@ public class InputManager : MonoBehaviour
 
     public InteractableObjectInput GetInteractionStruct()
     {
-        return new InteractableObjectInput
-        {
-            moveDirection = GetMovementVector()
-        };
+        return new InteractableObjectInput(
+            GetMovementVector(),
+            GetMouseDown()
+        );
     }
 }

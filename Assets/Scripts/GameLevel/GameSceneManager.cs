@@ -143,12 +143,12 @@ public class GameSceneManager : MonoBehaviour
     {
         if (newState != prevState)
         {
-            OnStateExit(prevState);
-            OnStateEnter(newState);
             if ((prevState == LevelState.Start || prevState == LevelState.Moving) && newState != LevelState.Paused)
             {
                 RecordSceneEvent(GetActiveRobot());
             }
+            OnStateExit(prevState);
+            OnStateEnter(newState);
         }
         float deltaTime = 0.0f;
         Robot robot = GetActiveRobot();

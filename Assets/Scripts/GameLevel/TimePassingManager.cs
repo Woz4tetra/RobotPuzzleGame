@@ -23,6 +23,14 @@ public class TimePassingManager : MonoBehaviour
 
     public void RecordEvent(SceneInstant instant)
     {
+        if (instants.Count > 0)
+        {
+            SceneInstant lastInstant = instants[instants.Count - 1];
+            if (Mathf.Abs(instant.levelDuration - lastInstant.levelDuration) < 0.1f)
+            {
+                return;
+            }
+        }
         instants.Add(instant);
         seekIndex = instants.Count - 1;
     }

@@ -69,6 +69,7 @@ public class GameSceneManager : MonoBehaviour
     private LevelState levelState = LevelState.Start;
     private LevelState beforePauseState = LevelState.Frozen;
     private SeekDestination seekDestination = null;
+    private float seekStartDuration = 0.0f;
 
     void Start()
     {
@@ -113,17 +114,17 @@ public class GameSceneManager : MonoBehaviour
         }
         else if (prevState != LevelState.Paused)
         {
-            if (objectiveManager.IsObjectiveComplete())
+            if (seekDestination != null)
+            {
+                state = LevelState.Seeking;
+            }
+            else if (objectiveManager.IsObjectiveComplete())
             {
                 state = LevelState.GameWin;
             }
             else if (objectiveManager.IsObjectiveFailed())
             {
                 state = LevelState.GameOver;
-            }
-            else if (seekDestination != null)
-            {
-                state = LevelState.Seeking;
             }
             else if (GetActiveRobot().IsInteractionDone())
             {
@@ -147,11 +148,13 @@ public class GameSceneManager : MonoBehaviour
         float deltaTime = 0.0f;
         Robot robot = GetActiveRobot();
         InteractableObject switchedRobot = robot;
+        float levelDuration = timePassingManager.GetLevelDuration();
         switch (newState)
         {
             case LevelState.Moving:
                 deltaTime = Time.deltaTime;
                 robot.Interact(inputManager.GetInteractionStruct());
+                RecordObjectEvent();
                 break;
             case LevelState.Paused:
                 break;
@@ -167,7 +170,17 @@ public class GameSceneManager : MonoBehaviour
             case LevelState.Seeking:
                 if (seekDestination != null)
                 {
-                    switchedRobot = OnSeekExit();
+                    if (IsSeekDestinationReached())
+                    {
+                        switchedRobot = OnSeekExit();
+                    }
+                    else
+                    {
+                        float exponentialFactor = Mathf.Abs(seekStartDuration - levelDuration);
+                        float baseFactor = seekAnimationMultiplier * Time.deltaTime;
+                        deltaTime = seekDestination.direction * Mathf.Max(baseFactor, baseFactor * exponentialFactor);
+                        JumpToObjectInstant(levelDuration + deltaTime);
+                    }
                 }
                 break;
 
@@ -199,11 +212,11 @@ public class GameSceneManager : MonoBehaviour
         if (instant != null)
         {
             Debug.Log($"Seeking {seekDirection} to {instant.levelDuration}");
-            seekDestination = new SeekDestination
+            SetSeekDestination(new SeekDestination
             {
                 goal = instant,
                 direction = seekDirection
-            };
+            });
         }
         else
         {
@@ -211,11 +224,39 @@ public class GameSceneManager : MonoBehaviour
         }
     }
 
+    void SetSeekDestination(SeekDestination destination)
+    {
+        seekDestination = destination;
+        seekStartDuration = timePassingManager.GetLevelDuration();
+        Debug.Log($"Seek started at {seekStartDuration}");
+    }
+
     Robot OnSeekExit()
     {
-        Robot switchedRobot = JumpToDestination(seekDestination);
+        Robot switchedRobot = JumpToSceneInstant(seekDestination);
         seekDestination = null;
         return switchedRobot;
+    }
+
+    bool IsSeekDestinationReached()
+    {
+        float levelDuration = timePassingManager.GetLevelDuration();
+        bool destinationReached;
+        if (levelDuration == 0.0f && seekDestination.goal.levelDuration == 0.0f)
+        {
+            Debug.Log("Level duration is 0. Forcing destination reached");
+            destinationReached = true;
+        }
+        else
+        {
+            bool isBelowDestination = levelDuration < seekDestination.goal.levelDuration;
+            destinationReached = isBelowDestination;
+            if (seekDestination.direction > 0)
+            {
+                destinationReached = !destinationReached;
+            }
+        }
+        return destinationReached;
     }
 
     void OnStateEnter(LevelState state)
@@ -239,7 +280,15 @@ public class GameSceneManager : MonoBehaviour
                 pauseMenuManager.OnActiveChange(true);
                 break;
             case LevelState.Reset:
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SetSeekDestination(new SeekDestination
+                {
+                    goal = new SceneInstant
+                    {
+                        activeRobot = GetActiveRobot(),
+                        levelDuration = 0.0f
+                    },
+                    direction = -1
+                });
                 break;
             default:
                 break;
@@ -255,10 +304,10 @@ public class GameSceneManager : MonoBehaviour
                 pauseMenuManager.OnActiveChange(false);
                 break;
             case LevelState.Start:
-                RecordEvent(GetActiveRobot());
+                RecordSceneEvent(GetActiveRobot());
                 break;
             case LevelState.Moving:
-                RecordEvent(GetActiveRobot());
+                RecordSceneEvent(GetActiveRobot());
                 break;
             default:
                 break;
@@ -281,7 +330,7 @@ public class GameSceneManager : MonoBehaviour
         }
     }
 
-    void RecordEvent(Robot activeRobot)
+    void RecordSceneEvent(Robot activeRobot)
     {
         Debug.Log("Recording event");
         timePassingManager.RecordEvent(new SceneInstant
@@ -289,6 +338,10 @@ public class GameSceneManager : MonoBehaviour
             activeRobot = activeRobot,
             levelDuration = timePassingManager.GetLevelDuration()
         });
+        RecordObjectEvent();
+    }
+    void RecordObjectEvent()
+    {
         foreach (InteractableObject obj in interactableObjects)
         {
             obj.RecordEvent(timePassingManager.GetLevelDuration());
@@ -305,15 +358,20 @@ public class GameSceneManager : MonoBehaviour
         }
     }
 
-    Robot JumpToDestination(SeekDestination destination)
+    Robot JumpToSceneInstant(SeekDestination destination)
     {
-        Debug.Log($"Jumping to {destination.goal.levelDuration} in the {destination.direction} direction");
+        float levelDuration = destination.goal.levelDuration;
+        Debug.Log($"Jumping to {levelDuration} in the {destination.direction} direction");
         timePassingManager.JumpToInstant(destination.goal);
+        JumpToObjectInstant(levelDuration);
+        return destination.goal.activeRobot;
+    }
+    void JumpToObjectInstant(float levelDuration)
+    {
         foreach (InteractableObject obj in interactableObjects)
         {
-            obj.JumpToInstant(destination.goal.levelDuration);
+            obj.JumpToInstant(levelDuration);
         }
-        return destination.goal.activeRobot;
     }
 
     Robot GetActiveRobot()

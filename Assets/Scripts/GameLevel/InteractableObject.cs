@@ -22,13 +22,18 @@ public abstract class InteractableObject : MonoBehaviour
         }
     }
 
-    public void FreezeObject(float levelDuration)
+    public void FreezeObject()
     {
         Debug.Log($"Freezing object {gameObject.name} at {transform.position}");
+        body.isKinematic = true;
+    }
+
+    public void RecordEvent(float levelDuration)
+    {
+        Debug.Log($"Recording event for object {gameObject.name} at {transform.position}");
         historyManager.RecordEvent(new ObjectInstant(
             transform.position, transform.rotation, body.velocity, body.angularVelocity
         ), levelDuration);
-        body.isKinematic = true;
     }
 
     public void UnfreezeObject(float levelDuration)

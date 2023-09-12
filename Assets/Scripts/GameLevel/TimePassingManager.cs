@@ -38,7 +38,7 @@ public class TimePassingManager : MonoBehaviour
         SeekTime(delta + GetLevelDuration());
     }
 
-    public void SeekTime(float goal)
+    private void SeekTime(float goal)
     {
         levelDuration = goal;
         if (levelDuration < 0.0f)
@@ -47,7 +47,14 @@ public class TimePassingManager : MonoBehaviour
         }
     }
 
-    public SceneInstant JumpToEvent(int eventDelta)
+    public void JumpToInstant(SceneInstant instant)
+    {
+        SeekTime(instant.levelDuration);
+        seekIndex = instants.IndexOf(instant);
+        Debug.Log($"Jumping to instant {seekIndex} at {levelDuration}");
+    }
+
+    public SceneInstant GetInstant(int eventDelta)
     {
         if (instants.Count == 0)
         {
@@ -66,9 +73,7 @@ public class TimePassingManager : MonoBehaviour
         {
             return null;
         }
-        seekIndex = newIndex;
-        SceneInstant instant = instants[seekIndex];
-        levelDuration = instant.levelDuration;
-        return instant;
+        Debug.Log($"Seek index is {seekIndex}. Requesting instant at {newIndex}");
+        return instants[newIndex];
     }
 }

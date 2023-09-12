@@ -13,7 +13,7 @@ public class Robot : InteractableObject
     private float minArrowMagnitude = 0.25f;
     private GameObject activeArrow;
     private bool wasInteracting = false;
-    private bool shouldInteract = true;
+    private bool isInteractionDone = true;
     private Vector2 prevDirection = Vector2.zero;
     private Vector3 force = Vector3.zero;
 
@@ -32,12 +32,12 @@ public class Robot : InteractableObject
             }
             body.AddForce(force, ForceMode.Impulse);
         }
-        else if (!shouldInteract)
+        else if (!isInteractionDone)
         {
             if (!isMoving)
             {
                 body.drag = lowDrag;
-                shouldInteract = true;
+                isInteractionDone = true;
             }
             else if (body.velocity.magnitude < rapidDecelSpeedThreshold)
             {
@@ -60,10 +60,11 @@ public class Robot : InteractableObject
         return this;
     }
 
+
     private void OnEnterInteracting()
     {
         activeArrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
-        shouldInteract = true;
+        isInteractionDone = true;
         body.velocity = Vector3.zero;
     }
 
@@ -77,7 +78,7 @@ public class Robot : InteractableObject
         };
         force *= forceMagnitude;
         Destroy(activeArrow);
-        shouldInteract = false;
+        isInteractionDone = false;
     }
 
     private void UpdateInteractingState(InteractableObjectInput objectInput)
@@ -105,8 +106,8 @@ public class Robot : InteractableObject
         activeArrow.transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
-    public bool ShouldInteract()
+    public bool IsInteractionDone()
     {
-        return shouldInteract;
+        return isInteractionDone;
     }
 }

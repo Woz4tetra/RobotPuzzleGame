@@ -48,6 +48,7 @@ public class GameSceneManager : MonoBehaviour
         Paused,
         Frozen,
         Moving,
+        Seeking,
         Reset,
         GameOver,
         GameWin
@@ -60,12 +61,14 @@ public class GameSceneManager : MonoBehaviour
     [SerializeField] private ObjectiveManager objectiveManager;
     [SerializeField] private Robot activeRobot;
     [SerializeField] private CameraObjectFollower cameraFollower;
+    [SerializeField] private float seekAnimationMultiplier = 2.0f;
     private List<Robot> robots = new List<Robot>();
 
     private int labelBorderSize = 5;
 
     private LevelState levelState = LevelState.Start;
     private LevelState beforePauseState = LevelState.Frozen;
+    private SeekDestination seekDestination = null;
 
     void Start()
     {
@@ -118,6 +121,10 @@ public class GameSceneManager : MonoBehaviour
             {
                 state = LevelState.GameOver;
             }
+            else if (seekDestination != null)
+            {
+                state = LevelState.Seeking;
+            }
             else if (GetActiveRobot().ShouldInteract())
             {
                 state = LevelState.Frozen;
@@ -138,17 +145,17 @@ public class GameSceneManager : MonoBehaviour
             OnStateEnter(newState);
         }
         float deltaTime = 0.0f;
+        Robot robot = GetActiveRobot();
         switch (newState)
         {
             case LevelState.Moving:
                 deltaTime = Time.deltaTime;
-                GetActiveRobot().Interact(inputManager.GetInteractionStruct());
+                robot.Interact(inputManager.GetInteractionStruct());
                 break;
             case LevelState.Paused:
                 break;
             case LevelState.Frozen:
                 int seekDirection = inputManager.GetSeekDirection();
-                Robot robot = GetActiveRobot();
                 InteractableObject switchedRobot;
                 if (seekDirection != 0)
                 {
@@ -161,10 +168,16 @@ public class GameSceneManager : MonoBehaviour
 
                 if (switchedRobot != robot && IsObjectRobot(switchedRobot))
                 {
-                    SetActiveRobot(switchedRobot as Robot);
-                    cameraFollower.SetFollowObject(switchedRobot.gameObject);
+                    FollowRobot(switchedRobot as Robot);
                 }
                 break;
+            case LevelState.Seeking:
+                if (seekDestination == null)
+                {
+                    break;
+                }
+                break;
+
             case LevelState.GameOver:
                 // TODO show game over screen
                 break;
@@ -175,7 +188,7 @@ public class GameSceneManager : MonoBehaviour
                 break;
         }
 
-        timePassingManager.SeekTime(deltaTime);
+        timePassingManager.MoveByDelta(deltaTime);
     }
 
     bool IsObjectRobot(InteractableObject obj)
@@ -223,6 +236,12 @@ public class GameSceneManager : MonoBehaviour
                 break;
         }
 
+    }
+
+    void FollowRobot(Robot robot)
+    {
+        SetActiveRobot(robot);
+        cameraFollower.SetFollowObject(robot.gameObject);
     }
 
     void FreezeObjects(Robot activeRobot)

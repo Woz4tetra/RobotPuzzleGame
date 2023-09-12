@@ -33,9 +33,14 @@ public class TimePassingManager : MonoBehaviour
         instants.RemoveAll(instant => instant.levelDuration > clearAfterTime);
     }
 
-    public void SeekTime(float delta)
+    public void MoveByDelta(float delta)
     {
-        levelDuration += delta;
+        SeekTime(delta + GetLevelDuration());
+    }
+
+    public void SeekTime(float goal)
+    {
+        levelDuration = goal;
         if (levelDuration < 0.0f)
         {
             levelDuration = 0.0f;

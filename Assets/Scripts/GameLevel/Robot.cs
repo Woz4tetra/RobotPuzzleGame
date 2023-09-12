@@ -110,4 +110,9 @@ public class Robot : InteractableObject
     {
         return isInteractionDone;
     }
+
+    public void CancelInteraction()
+    {
+        isInteractionDone = true;
+    }
 }

@@ -144,11 +144,17 @@ public class GameSceneManager : MonoBehaviour
         {
             OnStateExit(prevState);
             OnStateEnter(newState);
+            if ((prevState == LevelState.Start || prevState == LevelState.Moving) && newState != LevelState.Paused)
+            {
+                RecordSceneEvent(GetActiveRobot());
+            }
         }
         float deltaTime = 0.0f;
         Robot robot = GetActiveRobot();
         InteractableObject switchedRobot = robot;
         float levelDuration = timePassingManager.GetLevelDuration();
+        int seekDirection = 0;
+        Time.timeScale = 1.0f;
         switch (newState)
         {
             case LevelState.Moving:
@@ -157,13 +163,10 @@ public class GameSceneManager : MonoBehaviour
                 RecordObjectEvent();
                 break;
             case LevelState.Paused:
+                Time.timeScale = 0.0f;
                 break;
             case LevelState.Frozen:
-                int seekDirection = inputManager.GetSeekDirection();
-                if (seekDirection != 0)
-                {
-                    OnSeekEnter(seekDirection);
-                }
+                seekDirection = inputManager.GetSeekDirection();
                 switchedRobot = robot.Interact(inputManager.GetInteractionStruct());
 
                 break;
@@ -186,12 +189,18 @@ public class GameSceneManager : MonoBehaviour
 
             case LevelState.GameOver:
                 // TODO show game over screen
+                seekDirection = inputManager.GetSeekDirection();
                 break;
             case LevelState.GameWin:
                 // TODO show win screen
+                seekDirection = inputManager.GetSeekDirection();
                 break;
             default:
                 break;
+        }
+        if (seekDirection != 0)
+        {
+            OnSeekEnter(seekDirection);
         }
         if (switchedRobot != robot && IsObjectRobot(switchedRobot))
         {
@@ -272,11 +281,14 @@ public class GameSceneManager : MonoBehaviour
                 break;
             case LevelState.GameOver:
                 FreezeObjects();
+                GetActiveRobot().CancelInteraction();
                 break;
             case LevelState.GameWin:
                 FreezeObjects();
+                GetActiveRobot().CancelInteraction();
                 break;
             case LevelState.Paused:
+                FreezeObjects();
                 pauseMenuManager.OnActiveChange(true);
                 break;
             case LevelState.Reset:
@@ -302,12 +314,6 @@ public class GameSceneManager : MonoBehaviour
         {
             case LevelState.Paused:
                 pauseMenuManager.OnActiveChange(false);
-                break;
-            case LevelState.Start:
-                RecordSceneEvent(GetActiveRobot());
-                break;
-            case LevelState.Moving:
-                RecordSceneEvent(GetActiveRobot());
                 break;
             default:
                 break;

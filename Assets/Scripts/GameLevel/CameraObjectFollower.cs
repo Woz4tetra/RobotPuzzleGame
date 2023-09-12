@@ -20,7 +20,7 @@ public class CameraObjectFollower : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         Vector3 screenPos = playerCam.WorldToScreenPoint(followObject.transform.position);
         screenPos.x /= playerCam.pixelWidth;
@@ -28,13 +28,10 @@ public class CameraObjectFollower : MonoBehaviour
 
         if (!IsWithinMargin(screenPos.x) || !IsWithinMargin(screenPos.y))
         {
-            Matrix4x4 playerMat = Matrix4x4.TRS(followObject.transform.position, followObject.transform.rotation, Vector3.one);
-            Matrix4x4 cameraMat = playerToCameraOffset * playerMat;
-
-            float followDelta = cameraFollowSpeed * Time.deltaTime;
-            Vector3 smoothedPosition = Vector3.Lerp(transform.position, cameraMat.GetT(), followDelta);
-            Quaternion smoothedRotation = Quaternion.Lerp(transform.rotation, cameraMat.GetR(), followDelta);
-
+            (Vector3, Quaternion) cameraPose = ComputeCameraPose();
+            float followDelta = cameraFollowSpeed * Time.fixedDeltaTime;
+            Vector3 smoothedPosition = Vector3.Slerp(transform.position, cameraPose.Item1, followDelta);
+            Quaternion smoothedRotation = Quaternion.Slerp(transform.rotation, cameraPose.Item2, followDelta);
             transform.SetPositionAndRotation(smoothedPosition, smoothedRotation);
         }
     }
@@ -42,6 +39,19 @@ public class CameraObjectFollower : MonoBehaviour
     bool IsWithinMargin(float value)
     {
         return value > followMargin && value < 1.0f - followMargin;
+    }
+
+    (Vector3, Quaternion) ComputeCameraPose()
+    {
+        Matrix4x4 playerMat = Matrix4x4.TRS(followObject.transform.position, followObject.transform.rotation, Vector3.one);
+        Matrix4x4 cameraMat = playerToCameraOffset * playerMat;
+        return (cameraMat.GetT(), cameraMat.GetR());
+    }
+
+    public void Recenter()
+    {
+        (Vector3, Quaternion) cameraPose = ComputeCameraPose();
+        transform.SetPositionAndRotation(cameraPose.Item1, cameraPose.Item2);
     }
 
     public void SetFollowObject(GameObject followObject)

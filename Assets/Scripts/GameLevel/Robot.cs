@@ -51,6 +51,7 @@ public class Robot : InteractableObject
         UpdateInteractingState(objectInput);
         if (objectInput.IsInteracting())
         {
+            body.drag = lowDrag;
             Vector2 direction = objectInput.GetMoveDirection();
             float magnitude = Mathf.Max(minArrowMagnitude, direction.magnitude);
             direction = direction.normalized * magnitude;

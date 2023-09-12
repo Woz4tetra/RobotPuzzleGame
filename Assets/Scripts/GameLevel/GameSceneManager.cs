@@ -80,9 +80,10 @@ public class GameSceneManager : MonoBehaviour
                 robots.Add(obj as Robot);
             }
         }
+        Application.targetFrameRate = 60;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         LevelState newState = GetActiveState(levelState);
         StateUpdate(newState, levelState);
@@ -243,6 +244,10 @@ public class GameSceneManager : MonoBehaviour
     Robot OnSeekExit()
     {
         Robot switchedRobot = JumpToSceneInstant(seekDestination);
+        if (seekDestination.goal.levelDuration == 0.0f)
+        {
+            CenterCameraOnRobot();
+        }
         seekDestination = null;
         return switchedRobot;
     }
@@ -325,6 +330,11 @@ public class GameSceneManager : MonoBehaviour
     {
         SetActiveRobot(robot);
         cameraFollower.SetFollowObject(robot.gameObject);
+    }
+
+    void CenterCameraOnRobot()
+    {
+        cameraFollower.Recenter();
     }
 
     void FreezeObjects()

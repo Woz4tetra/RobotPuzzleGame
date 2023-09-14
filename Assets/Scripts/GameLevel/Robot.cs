@@ -10,11 +10,6 @@ public class Robot : InteractableObject
     [SerializeField] float highDrag = 10.0f;
     float epsilon = 1e-3f;
     private float forceDecay = 0.7f;
-    private float minArrowMagnitude = 0.25f;
-    private GameObject activeArrow;
-    private bool wasInteracting = false;
-    private bool isInteractionDone = true;
-    private Vector2 prevDirection = Vector2.zero;
     private Vector3 force = Vector3.zero;
 
     void Update()
@@ -23,7 +18,7 @@ public class Robot : InteractableObject
         {
             return;
         }
-        bool isMoving = body.velocity.magnitude > frozenSpeed;
+        bool isMoving = IsMoving();
         if (force.magnitude > epsilon)
         {
             if (isMoving)
@@ -32,12 +27,11 @@ public class Robot : InteractableObject
             }
             body.AddForce(force, ForceMode.Impulse);
         }
-        else if (!isInteractionDone)
+        else
         {
             if (!isMoving)
             {
                 body.drag = lowDrag;
-                isInteractionDone = true;
             }
             else if (body.velocity.magnitude < rapidDecelSpeedThreshold)
             {
@@ -46,31 +40,20 @@ public class Robot : InteractableObject
         }
     }
 
-    override public InteractableObject Interact(InteractableObjectInput objectInput)
+    public bool IsMoving()
     {
-        UpdateInteractingState(objectInput);
-        if (objectInput.IsInteracting())
-        {
-            body.drag = lowDrag;
-            Vector2 direction = objectInput.GetMoveDirection();
-            float magnitude = Mathf.Max(minArrowMagnitude, direction.magnitude);
-            direction = direction.normalized * magnitude;
-            ScaleArrow(direction);
-            prevDirection = direction;
-        }
-        return this;
+        return body.velocity.magnitude > frozenSpeed;
     }
 
-
-    private void OnEnterInteracting()
+    override public void OnEnterInteracting()
     {
-        activeArrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
-        isInteractionDone = true;
-        body.velocity = Vector3.zero;
+
     }
 
-    private void OnExitInteracting(Vector2 moveDirection)
+    override public void OnExitInteracting(InteractableObjectInput objectInput)
     {
+        body.drag = lowDrag;
+        Vector2 moveDirection = objectInput.GetMoveDirection();
         force = new Vector3
         {
             x = moveDirection.x,
@@ -78,42 +61,10 @@ public class Robot : InteractableObject
             z = 0.0f
         };
         force *= forceMagnitude;
-        Destroy(activeArrow);
-        isInteractionDone = false;
     }
 
-    private void UpdateInteractingState(InteractableObjectInput objectInput)
+    public Vector3 GetPosition()
     {
-        bool isInteracting = objectInput.IsInteracting();
-        if (isInteracting != wasInteracting)
-        {
-            if (isInteracting)
-            {
-                OnEnterInteracting();
-            }
-            else
-            {
-                OnExitInteracting(prevDirection);
-            }
-        }
-        wasInteracting = isInteracting;
-    }
-
-    private void ScaleArrow(Vector2 direction)
-    {
-        float magnitude = direction.magnitude;
-        float angle = Mathf.Rad2Deg * Mathf.Atan2(direction.y, direction.x);
-        activeArrow.transform.localScale = new Vector3(magnitude, 1f, 1f);
-        activeArrow.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-    }
-
-    public bool IsInteractionDone()
-    {
-        return isInteractionDone;
-    }
-
-    public void CancelInteraction()
-    {
-        isInteractionDone = true;
+        return transform.position;
     }
 }

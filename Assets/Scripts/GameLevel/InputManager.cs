@@ -35,6 +35,10 @@ public class InputManager : MonoBehaviour
         return Input.GetButton("Fire1");
     }
 
+    private bool GetSpaceDown()
+    {
+        return Input.GetKey(KeyCode.Space);
+    }
     public bool PauseToggled()
     {
         return Input.GetKeyDown(KeyCode.Escape);  // TODO reference key mapping
@@ -67,7 +71,8 @@ public class InputManager : MonoBehaviour
     {
         return new InteractableObjectInput(
             GetMovementVector(),
-            GetMouseDown()
+            GetMouseDown(),
+            GetSpaceDown()
         );
     }
 }

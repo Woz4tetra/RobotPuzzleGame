@@ -1835,6 +1835,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5523376916728534509, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: activeRobot
+      value: 
+      objectReference: {fileID: 503650613}
+    - target: {fileID: 5523376916728534509, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5523376916728534509, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[0]
+      value: 
+      objectReference: {fileID: 688162579}
+    - target: {fileID: 5523376916728534509, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[1]
+      value: 
+      objectReference: {fileID: 2140329863}
+    - target: {fileID: 5523376916728534509, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[2]
+      value: 
+      objectReference: {fileID: 503650613}
+    - target: {fileID: 5523376916728534509, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[3]
+      value: 
+      objectReference: {fileID: 458680032}
+    - target: {fileID: 5523376916728534509, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
+      propertyPath: interactableObjects.Array.data[4]
+      value: 
+      objectReference: {fileID: 54780282}
     - target: {fileID: 7918999226873844421, guid: e14a28aafd3b6db09980b89281a288e8, type: 3}
       propertyPath: cameraObjectFollower
       value: 

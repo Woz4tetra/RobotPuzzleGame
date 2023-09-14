@@ -11,7 +11,8 @@ public abstract class InteractableObject : MonoBehaviour
         body = GetComponent<Rigidbody>();
     }
 
-    abstract public InteractableObject Interact(InteractableObjectInput objectInput);
+    abstract public void OnEnterInteracting();
+    abstract public void OnExitInteracting(InteractableObjectInput objectInput);
 
     void OnDrawGizmos()
     {
@@ -30,7 +31,6 @@ public abstract class InteractableObject : MonoBehaviour
 
     public void RecordEvent(float levelDuration)
     {
-        Debug.Log($"Recording event for object {gameObject.name} at {transform.position}");
         historyManager.RecordEvent(new ObjectInstant(
             transform.position, transform.rotation, body.velocity, body.angularVelocity
         ), levelDuration);

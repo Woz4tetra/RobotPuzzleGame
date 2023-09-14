@@ -1,4 +1,6 @@
 public class InanimateObject : InteractableObject
 {
-    override public InteractableObject Interact(InteractableObjectInput objectInput) { return this; }
+
+    override public void OnEnterInteracting() { }
+    override public void OnExitInteracting(InteractableObjectInput objectInput) { }
 }

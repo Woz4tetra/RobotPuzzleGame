@@ -2,12 +2,21 @@ using UnityEngine;
 public class InteractableObjectInput
 {
     private Vector2 moveDirection;
-    private bool isInteracting;
+    private bool shouldAct;
+    private bool shouldDialog;
 
-    public InteractableObjectInput(Vector2 moveDirection, bool isInteracting)
+    public InteractableObjectInput()
+    {
+        moveDirection = Vector2.zero;
+        shouldAct = false;
+        shouldDialog = false;
+    }
+
+    public InteractableObjectInput(Vector2 moveDirection, bool shouldAct, bool shouldDialog)
     {
         this.moveDirection = moveDirection;
-        this.isInteracting = isInteracting;
+        this.shouldAct = shouldAct;
+        this.shouldDialog = shouldDialog;
     }
 
     public Vector2 GetMoveDirection()
@@ -15,8 +24,13 @@ public class InteractableObjectInput
         return moveDirection;
     }
 
-    public bool IsInteracting()
+    public bool ShouldAct()
     {
-        return isInteracting;
+        return shouldAct;
+    }
+
+    public bool ShouldDialog()
+    {
+        return shouldDialog;
     }
 }

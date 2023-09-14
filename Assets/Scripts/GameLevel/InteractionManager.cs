@@ -13,9 +13,8 @@ abstract class InteractionManager : MonoBehaviour
     }
     InteractionState state = InteractionState.Idle;
 
-    public void UpdateInteraction(InteractableObjectInput objectInput)
+    public void UpdateInteraction(InteractableObjectInput objectInput, bool isInteracting)
     {
-        bool isInteracting = objectInput.ShouldAct();
         state = InteractionState.Idle;
         if (isInteracting != wasInteracting)
         {

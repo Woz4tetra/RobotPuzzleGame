@@ -59,6 +59,7 @@ public class GameSceneManager : MonoBehaviour
     [SerializeField] private CameraObjectFollower cameraFollower;
     [SerializeField] private InteractableObjectManager interactableObjectManager;
     [SerializeField] private ActingManager actingManager;
+    [SerializeField] private DialogManager dialogManager;
     [SerializeField] private float seekAnimationMultiplier = 2.0f;
 
     private int labelBorderSize = 5;
@@ -125,7 +126,7 @@ public class GameSceneManager : MonoBehaviour
             {
                 state = LevelState.GameOver;
             }
-            else if (actingManager.IsInteracting())
+            else if (AnyInteracting())
             {
                 state = LevelState.Frozen;
             }
@@ -158,7 +159,7 @@ public class GameSceneManager : MonoBehaviour
         {
             case LevelState.Moving:
                 deltaTime = Time.deltaTime;
-                actingManager.UpdateInteraction(inputManager.GetInteractionStruct());
+                UpdateInteractions();
                 interactableObjectManager.RecordObjectEvent();
                 break;
             case LevelState.Paused:
@@ -166,7 +167,7 @@ public class GameSceneManager : MonoBehaviour
                 break;
             case LevelState.Frozen:
                 seekDirection = inputManager.GetSeekDirection();
-                actingManager.UpdateInteraction(inputManager.GetInteractionStruct());
+                UpdateInteractions();
                 break;
             case LevelState.Seeking:
                 if (seekDestination != null)
@@ -221,11 +222,11 @@ public class GameSceneManager : MonoBehaviour
                 break;
             case LevelState.GameOver:
                 interactableObjectManager.FreezeObjects();
-                actingManager.UpdateInteraction(new InteractableObjectInput());
+                CancelInteractions();
                 break;
             case LevelState.GameWin:
                 interactableObjectManager.FreezeObjects();
-                actingManager.UpdateInteraction(new InteractableObjectInput());
+                CancelInteractions();
                 break;
             case LevelState.Paused:
                 interactableObjectManager.FreezeObjects();
@@ -371,8 +372,26 @@ public class GameSceneManager : MonoBehaviour
     }
 
     // ---
-    // Active robot
+    // Interactions
     // ---
+
+    bool AnyInteracting()
+    {
+        return actingManager.IsInteracting() || dialogManager.IsInteracting();
+    }
+
+    void UpdateInteractions()
+    {
+        InteractableObjectInput input = inputManager.GetInteractionStruct();
+        actingManager.UpdateInteraction(input, input.ShouldAct());
+        dialogManager.UpdateInteraction(input, input.ShouldDialog());
+    }
+    void CancelInteractions()
+    {
+        InteractableObjectInput input = new InteractableObjectInput();
+        actingManager.UpdateInteraction(input, input.ShouldAct());
+        dialogManager.UpdateInteraction(input, input.ShouldDialog());
+    }
 
 
     void OnGUI()

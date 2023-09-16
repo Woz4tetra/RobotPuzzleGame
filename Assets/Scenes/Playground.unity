@@ -600,9 +600,21 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2617755718751634073, guid: 361e526a731ac3a4eb38f68fb61a5487, type: 3}
+      propertyPath: followMargin
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2617755718751634073, guid: 361e526a731ac3a4eb38f68fb61a5487, type: 3}
       propertyPath: followObject
       value: 
       objectReference: {fileID: 503650608}
+    - target: {fileID: 2617755718751634073, guid: 361e526a731ac3a4eb38f68fb61a5487, type: 3}
+      propertyPath: slowDownTime
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2617755718751634073, guid: 361e526a731ac3a4eb38f68fb61a5487, type: 3}
+      propertyPath: cameraFollowSpeed
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6776160879495246532, guid: 361e526a731ac3a4eb38f68fb61a5487, type: 3}
       propertyPath: m_Name
       value: Main Camera
@@ -823,6 +835,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8228123260929789260, guid: bdba584d7826396bbb1695bafb158b34, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8926094953162810963, guid: bdba584d7826396bbb1695bafb158b34, type: 3}
+      propertyPath: m_Interpolate
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

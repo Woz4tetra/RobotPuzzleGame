@@ -8,6 +8,8 @@ public class CameraObjectFollower : MonoBehaviour
     [SerializeField] private GameObject followObject;
     [SerializeField] private float followMargin = 0.2f;
     [SerializeField] private float cameraFollowSpeed = 3.0f;
+    [SerializeField] private float slowDownTime = 1.0f;
+    private float slowDownTimer = 0.0f;
 
 
     // Start is called before the first frame update
@@ -22,22 +24,42 @@ public class CameraObjectFollower : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        Vector3 screenPos = playerCam.WorldToScreenPoint(followObject.transform.position);
-        screenPos.x /= playerCam.pixelWidth;
-        screenPos.y /= playerCam.pixelHeight;
+        (Vector3, Quaternion) cameraPose = ComputeCameraPose();
 
-        if (!IsWithinMargin(screenPos.x) || !IsWithinMargin(screenPos.y))
+        Vector3 screenPos = playerCam.WorldToScreenPoint(cameraPose.Item1);
+        Vector3 cameraPositionGoal = cameraPose.Item1;
+        float slowDownFactor = 1.0f;
+        if (IsWithinMargin(screenPos.x, playerCam.pixelWidth) && IsWithinMargin(screenPos.y, playerCam.pixelHeight))
         {
-            (Vector3, Quaternion) cameraPose = ComputeCameraPose();
-            float followDelta = cameraFollowSpeed * Time.fixedDeltaTime;
-            Vector3 smoothedPosition = Vector3.Slerp(transform.position, cameraPose.Item1, followDelta);
-            Quaternion smoothedRotation = Quaternion.Slerp(transform.rotation, cameraPose.Item2, followDelta);
-            transform.SetPositionAndRotation(smoothedPosition, smoothedRotation);
+            if (slowDownTimer == 0.0f)
+            {
+                slowDownTimer = Time.fixedDeltaTime;
+            }
+            else
+            {
+                slowDownTimer = Mathf.Min(slowDownTimer + Time.fixedDeltaTime, slowDownTime);
+            }
+            if (slowDownTimer >= slowDownTime)
+            {
+                cameraPositionGoal = transform.position;
+            }
+            slowDownFactor = 1.0f - (slowDownTimer / slowDownTime);
         }
-    }
+        else
+        {
+            slowDownTimer = 0.0f;
+        }
 
-    bool IsWithinMargin(float value)
+        Quaternion cameraRotationGoal = cameraPose.Item2;
+
+        float followDelta = slowDownFactor * cameraFollowSpeed * Time.fixedDeltaTime;
+        Vector3 smoothedPosition = Vector3.Lerp(transform.position, cameraPositionGoal, followDelta);
+        Quaternion smoothedRotation = Quaternion.Lerp(transform.rotation, cameraRotationGoal, followDelta);
+        transform.SetPositionAndRotation(smoothedPosition, smoothedRotation);
+    }
+    bool IsWithinMargin(float value, float maxValue)
     {
+        value /= maxValue;
         return value > followMargin && value < 1.0f - followMargin;
     }
 

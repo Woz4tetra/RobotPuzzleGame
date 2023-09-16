@@ -41,6 +41,9 @@ abstract class InteractionManager : MonoBehaviour
             case InteractionState.Interacting:
                 OnInteracting(objectInput);
                 break;
+            case InteractionState.Idle:
+                OnIdle(objectInput);
+                break;
             case InteractionState.Exit:
                 OnExitInteracting(lastObjectInput);
                 break;
@@ -58,5 +61,6 @@ abstract class InteractionManager : MonoBehaviour
 
     abstract protected void OnEnterInteracting(InteractableObjectInput objectInput);
     abstract protected void OnInteracting(InteractableObjectInput objectInput);
+    abstract protected void OnIdle(InteractableObjectInput objectInput);
     abstract protected void OnExitInteracting(InteractableObjectInput objectInput);
 }

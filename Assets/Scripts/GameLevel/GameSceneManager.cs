@@ -155,11 +155,12 @@ public class GameSceneManager : MonoBehaviour
         float levelDuration = timePassingManager.GetLevelDuration();
         int seekDirection = 0;
         Time.timeScale = 1.0f;
+        InteractableObjectInput input = inputManager.GetInteractionStruct();
         switch (newState)
         {
             case LevelState.Moving:
                 deltaTime = Time.deltaTime;
-                UpdateInteractions();
+                UpdateInteractions(input);
                 interactableObjectManager.RecordObjectEvent();
                 break;
             case LevelState.Paused:
@@ -167,7 +168,7 @@ public class GameSceneManager : MonoBehaviour
                 break;
             case LevelState.Frozen:
                 seekDirection = inputManager.GetSeekDirection();
-                UpdateInteractions();
+                UpdateInteractions(input);
                 break;
             case LevelState.Seeking:
                 if (seekDestination != null)
@@ -255,6 +256,9 @@ public class GameSceneManager : MonoBehaviour
         {
             case LevelState.Paused:
                 pauseMenuManager.OnActiveChange(false);
+                break;
+            case LevelState.Start:
+                QueueDialog();
                 break;
             default:
                 break;
@@ -380,17 +384,25 @@ public class GameSceneManager : MonoBehaviour
         return actingManager.IsInteracting() || dialogManager.IsInteracting();
     }
 
-    void UpdateInteractions()
+    void UpdateInteractions(InteractableObjectInput input)
     {
-        InteractableObjectInput input = inputManager.GetInteractionStruct();
-        actingManager.UpdateInteraction(input, input.ShouldAct());
         dialogManager.UpdateInteraction(input, input.ShouldDialog());
+        if (dialogManager.IsInteracting())
+        {
+            return;
+        }
+        actingManager.UpdateInteraction(input, input.ShouldAct());
     }
+
+    void QueueDialog()
+    {
+        dialogManager.QueueDialog(new Conversation(new string[] { "Hello", "World" }));
+    }
+
     void CancelInteractions()
     {
         InteractableObjectInput input = new InteractableObjectInput();
-        actingManager.UpdateInteraction(input, input.ShouldAct());
-        dialogManager.UpdateInteraction(input, input.ShouldDialog());
+        UpdateInteractions(input);
     }
 
 

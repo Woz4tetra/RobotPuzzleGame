@@ -6,6 +6,7 @@ public class Tags
 
     public static Tags Robot { get { return new Tags("Robot"); } }
     public static Tags Interactive { get { return new Tags("Interactive"); } }
+    public static Tags DialogTrigger { get { return new Tags("DialogTrigger"); } }
 
     public override string ToString()
     {

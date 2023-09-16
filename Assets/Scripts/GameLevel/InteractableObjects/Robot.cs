@@ -11,6 +11,7 @@ public class Robot : InteractableObject
     float epsilon = 1e-3f;
     private float forceDecay = 0.7f;
     private Vector3 force = Vector3.zero;
+    private Conversation activeConversation = new Conversation();
 
     void Update()
     {
@@ -66,5 +67,27 @@ public class Robot : InteractableObject
     public Vector3 GetPosition()
     {
         return transform.position;
+    }
+
+    public Conversation GetActiveConversation()
+    {
+        return activeConversation;
+    }
+
+    void OnTriggerEnter(Collider collision)
+    {
+        if (Helpers.InTagInTree(collision.gameObject, Tags.DialogTrigger.Value))
+        {
+            ConversationObject conversation = collision.gameObject.GetComponent<ConversationObject>();
+            if (conversation != null && activeConversation.IsDone())
+            {
+                activeConversation = conversation.GetConversation();
+                Debug.Log($"{collision.gameObject.name} is setting the conversation. Is done: {activeConversation.IsDone()}");
+                foreach (string line in activeConversation.GetDialogTexts())
+                {
+                    Debug.Log(line);
+                }
+            }
+        }
     }
 }

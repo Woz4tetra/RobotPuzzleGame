@@ -24,6 +24,11 @@ class ActingManager : InteractionManager
         ScaleArrow(robot.GetPosition(), objectInput.GetMoveDirection());
     }
 
+    override protected void OnIdle(InteractableObjectInput objectInput)
+    {
+
+    }
+
     override protected void OnExitInteracting(InteractableObjectInput objectInput)
     {
         Debug.Log($"{gameObject.name} exit interacting");

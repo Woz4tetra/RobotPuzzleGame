@@ -19,27 +19,6 @@ public class TouchTargetObjectiveCriteria : ObjectiveCriteria
         return 0.0f <= clearTime && clearTime <= timePassingManager.GetLevelDuration();
     }
 
-    private bool InTagInTree(GameObject obj, string tag)
-    {
-        if (obj.tag == tag)
-        {
-            return true;
-        }
-        Transform tf = obj.transform;
-        while (true)
-        {
-            if (tf == null)
-            {
-                return false;
-            }
-            if (tf.gameObject.tag == tag)
-            {
-                return true;
-            }
-            tf = tf.parent;
-        }
-    }
-
     void ResetCriteria()
     {
         clearTime = -1.0f;
@@ -47,7 +26,7 @@ public class TouchTargetObjectiveCriteria : ObjectiveCriteria
 
     void OnTriggerEnter(Collider collision)
     {
-        if (InTagInTree(collision.gameObject, Tags.Robot.Value))
+        if (Helpers.InTagInTree(collision.gameObject, Tags.Robot.Value))
         {
             clearTime = timePassingManager.GetLevelDuration();
         }

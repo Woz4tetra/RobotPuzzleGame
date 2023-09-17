@@ -40,9 +40,9 @@ public class InputManager : MonoBehaviour
         return Input.GetKey(KeyCode.Space);
     }
 
-    private bool GetRDown()
+    private bool GetSwitchRobotDown()
     {
-        return Input.GetKey(KeyCode.R);
+        return Input.GetKey(KeyCode.Tab);
     }
 
     public bool PauseToggled()
@@ -79,7 +79,7 @@ public class InputManager : MonoBehaviour
             GetMovementVector(),
             GetMouseDown(),
             GetSpaceDown(),
-            GetRDown()
+            GetSwitchRobotDown()
         );
     }
 }

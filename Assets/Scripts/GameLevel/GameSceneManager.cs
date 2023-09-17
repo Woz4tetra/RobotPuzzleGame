@@ -66,6 +66,7 @@ public class GameSceneManager : MonoBehaviour
     private int labelBorderSize = 5;
 
     private LevelState levelState = LevelState.Start;
+    private LevelState nextState = LevelState.Start;
     private LevelState beforePauseState = LevelState.Frozen;
     private SeekDestination seekDestination = null;
     private float seekStartDuration = 0.0f;
@@ -79,11 +80,15 @@ public class GameSceneManager : MonoBehaviour
         Application.targetFrameRate = 60;
     }
 
+    void Update()
+    {
+        nextState = GetActiveState(levelState);
+    }
+
     void FixedUpdate()
     {
-        LevelState newState = GetActiveState(levelState);
-        StateUpdate(newState, levelState);
-        levelState = newState;
+        StateUpdate(nextState, levelState);
+        levelState = nextState;
     }
 
     // ---
@@ -105,10 +110,13 @@ public class GameSceneManager : MonoBehaviour
         {
             if (prevState == LevelState.Paused)
             {
+                Debug.Log($"Unpausing from {beforePauseState}");
+                Time.timeScale = 1.0f;
                 state = beforePauseState;
             }
             else
             {
+                Debug.Log($"Pausing. Previous state is {prevState}");
                 beforePauseState = prevState;
                 state = LevelState.Paused;
             }
@@ -152,7 +160,7 @@ public class GameSceneManager : MonoBehaviour
         }
         float deltaTime = 0.0f;
         Robot robot = interactableObjectManager.GetActiveRobot();
-        InteractableObject switchedRobot = robot;
+        Robot switchedRobot = robot;
         float levelDuration = timePassingManager.GetLevelDuration();
         int seekDirection = 0;
         Time.timeScale = 1.0f;
@@ -161,7 +169,7 @@ public class GameSceneManager : MonoBehaviour
         {
             case LevelState.Moving:
                 deltaTime = Time.deltaTime;
-                UpdateInteractions(input);
+                UpdateMovingInteractions(input);
                 interactableObjectManager.RecordObjectEvent();
                 break;
             case LevelState.Paused:
@@ -169,7 +177,12 @@ public class GameSceneManager : MonoBehaviour
                 break;
             case LevelState.Frozen:
                 seekDirection = inputManager.GetSeekDirection();
-                UpdateInteractions(input);
+                UpdateFrozenInteractions(input);
+                Robot nextRobot = switchRobotManager.GetNextActiveRobot();
+                if (nextRobot != null)
+                {
+                    switchedRobot = nextRobot;
+                }
                 break;
             case LevelState.Seeking:
                 if (seekDestination != null)
@@ -177,6 +190,7 @@ public class GameSceneManager : MonoBehaviour
                     if (IsSeekDestinationReached())
                     {
                         switchedRobot = OnSeekExit();
+                        Debug.Log($"Seeking complete. Switched to {switchedRobot.gameObject.name}");
                     }
                     else
                     {
@@ -203,9 +217,9 @@ public class GameSceneManager : MonoBehaviour
         {
             OnSeekEnter(seekDirection);
         }
-        if (switchedRobot != robot && InteractableObjectManager.IsObjectRobot(switchedRobot))
+        if (switchedRobot != robot)
         {
-            FollowRobot(switchedRobot as Robot);
+            FollowRobot(switchedRobot);
         }
 
         timePassingManager.MoveByDelta(deltaTime);
@@ -235,11 +249,13 @@ public class GameSceneManager : MonoBehaviour
                 pauseMenuManager.OnActiveChange(true);
                 break;
             case LevelState.Reset:
+                SceneInstant instant = timePassingManager.GetFirstInstant();
+                Debug.Log($"Resetting to beginning. Active robot was {instant.activeRobot.gameObject.name}");
                 SetSeekDestination(new SeekDestination
                 {
                     goal = new SceneInstant
                     {
-                        activeRobot = interactableObjectManager.GetActiveRobot(),
+                        activeRobot = instant.activeRobot,
                         levelDuration = 0.0f
                     },
                     direction = -1
@@ -296,6 +312,7 @@ public class GameSceneManager : MonoBehaviour
         {
             CenterCameraOnRobot();
         }
+        switchRobotManager.ResetNearbyRobot();
         seekDestination = null;
         return switchedRobot;
     }
@@ -340,6 +357,7 @@ public class GameSceneManager : MonoBehaviour
     {
         interactableObjectManager.SetActiveRobot(robot);
         cameraFollower.SetFollowObject(robot.gameObject);
+        CenterCameraOnRobot();
     }
 
     void CenterCameraOnRobot()
@@ -385,7 +403,7 @@ public class GameSceneManager : MonoBehaviour
         return actingManager.IsInteracting() || dialogManager.IsInteracting();
     }
 
-    void UpdateInteractions(InteractableObjectInput input)
+    void UpdateFrozenInteractions(InteractableObjectInput input)
     {
         dialogManager.UpdateInteraction(input, input.ShouldDialog());
         if (dialogManager.IsInteracting())
@@ -394,6 +412,15 @@ public class GameSceneManager : MonoBehaviour
         }
         switchRobotManager.UpdateInteraction(input, input.ShouldSwitch());
         if (switchRobotManager.IsInteracting())
+        {
+            return;
+        }
+        actingManager.UpdateInteraction(input, input.ShouldAct());
+    }
+    void UpdateMovingInteractions(InteractableObjectInput input)
+    {
+        dialogManager.UpdateInteraction(input, input.ShouldDialog());
+        if (dialogManager.IsInteracting())
         {
             return;
         }
@@ -408,7 +435,9 @@ public class GameSceneManager : MonoBehaviour
     void CancelInteractions()
     {
         InteractableObjectInput input = new InteractableObjectInput();
-        UpdateInteractions(input);
+        dialogManager.UpdateInteraction(input, input.ShouldDialog());
+        switchRobotManager.UpdateInteraction(input, input.ShouldSwitch());
+        actingManager.UpdateInteraction(input, input.ShouldAct());
     }
 
 

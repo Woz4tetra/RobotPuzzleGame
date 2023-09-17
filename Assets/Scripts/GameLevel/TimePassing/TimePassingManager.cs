@@ -62,6 +62,24 @@ public class TimePassingManager : MonoBehaviour
         Debug.Log($"Jumping to instant {seekIndex} at {levelDuration}");
     }
 
+    public SceneInstant GetFirstInstant()
+    {
+        if (instants.Count == 0)
+        {
+            return null;
+        }
+        return instants[0];
+    }
+
+    public SceneInstant GetLastInstant()
+    {
+        if (instants.Count == 0)
+        {
+            return null;
+        }
+        return instants[instants.Count - 1];
+    }
+
     public SceneInstant GetInstant(int eventDelta)
     {
         if (instants.Count == 0)

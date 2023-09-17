@@ -75,11 +75,16 @@ public class Robot : InteractableObject
         return nextConversation;
     }
 
+    public Robot GetNearbyRobot()
+    {
+        return nearbyRobot;
+    }
+
     void OnTriggerEnter(Collider collision)
     {
         if (Helpers.InTagInTree(collision.gameObject, Tags.DialogTrigger.Value))
         {
-            ConversationObject conversation = collision.gameObject.GetComponent<ConversationObject>();
+            ConversationObject conversation = Helpers.GetComponentInTree<ConversationObject>(collision.gameObject);
             if (conversation != null && nextConversation.IsDone())
             {
                 nextConversation = conversation.GetConversation();
@@ -90,38 +95,49 @@ public class Robot : InteractableObject
                 }
             }
         }
-        // if (Helpers.InTagInTree(collision.gameObject, Tags.Robot.Value))
-        // {
-        //     Robot otherRobot = collision.gameObject.GetComponent<Robot>();
-        //     if (otherRobot != null)
-        //     {
-        //         bool shouldAssign;
-        //         if (nearbyRobot == null)
-        //         {
-        //             shouldAssign = true;
-        //         }
-        //         else
-        //         {
-        //             float otherDistance = (otherRobot.GetPosition() - GetPosition()).magnitude;
-        //             float nearbyDistance = (nearbyRobot.GetPosition() - GetPosition()).magnitude;
-        //             shouldAssign = otherDistance < nearbyDistance;
-        //         }
-        //         if (shouldAssign)
-        //         {
-        //             nearbyRobot = otherRobot;
-        //         }
-        //     }
-        // }
+        else if (Helpers.InTagInTree(collision.gameObject, Tags.SwitchRobotTrigger.Value))
+        {
+            Debug.Log("Switch robot trigger entered");
+            Robot otherRobot = Helpers.GetComponentInTree<Robot>(collision.gameObject);
+            if (otherRobot != null)
+            {
+                bool shouldAssign;
+                if (nearbyRobot == null)
+                {
+                    shouldAssign = true;
+                }
+                else
+                {
+                    float otherDistance = (otherRobot.GetPosition() - GetPosition()).magnitude;
+                    float nearbyDistance = (nearbyRobot.GetPosition() - GetPosition()).magnitude;
+                    shouldAssign = otherDistance < nearbyDistance;
+                }
+                if (shouldAssign)
+                {
+                    nearbyRobot = otherRobot;
+                    Debug.Log($"{collision.gameObject.name} is setting the next active robot.");
+                }
+            }
+        }
     }
     void OnTriggerExit(Collider collision)
     {
         if (Helpers.InTagInTree(collision.gameObject, Tags.DialogTrigger.Value))
         {
-            ConversationObject conversation = collision.gameObject.GetComponent<ConversationObject>();
+            ConversationObject conversation = Helpers.GetComponentInTree<ConversationObject>(collision.gameObject);
             if (conversation != null && nextConversation == conversation.GetConversation())
             {
                 nextConversation = new Conversation();
-                Debug.Log($"{collision.gameObject.name} is clearing the conversation.");
+                Debug.Log($"{collision.gameObject.name} is clearing the next conversation.");
+            }
+        }
+        else if (Helpers.InTagInTree(collision.gameObject, Tags.SwitchRobotTrigger.Value))
+        {
+            Robot otherRobot = Helpers.GetComponentInTree<Robot>(collision.gameObject);
+            if (otherRobot != null && otherRobot == nearbyRobot)
+            {
+                nearbyRobot = null;
+                Debug.Log($"{collision.gameObject.name} is clearing the next active robot.");
             }
         }
     }

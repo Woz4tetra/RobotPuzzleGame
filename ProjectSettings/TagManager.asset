@@ -8,6 +8,7 @@ TagManager:
   - Interactive
   - Robot
   - DialogTrigger
+  - SwitchRobotTrigger
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - UI
   - Ground
   - Robot
-  - 
+  - Switch
   - 
   - 
   - 

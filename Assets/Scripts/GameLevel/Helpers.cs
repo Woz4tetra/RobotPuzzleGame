@@ -21,4 +21,26 @@ public static class Helpers
             tf = tf.parent;
         }
     }
+    public static T GetComponentInTree<T>(GameObject obj) where T : Component
+    {
+        T component = obj.GetComponent<T>();
+        if (component != null)
+        {
+            return component;
+        }
+        Transform tf = obj.transform;
+        while (true)
+        {
+            if (tf == null)
+            {
+                return null;
+            }
+            component = tf.gameObject.GetComponent<T>();
+            if (component != null)
+            {
+                return component;
+            }
+            tf = tf.parent;
+        }
+    }
 }

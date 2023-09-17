@@ -1,33 +1,28 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CameraObjectFollower : MonoBehaviour
 {
-    private Matrix4x4 playerToCameraOffset;
     private Camera playerCam;
     [SerializeField] private GameObject followObject;
     [SerializeField] private float followMargin = 0.2f;
     [SerializeField] private float cameraFollowSpeed = 3.0f;
     [SerializeField] private float slowDownTime = 1.0f;
     private float slowDownTimer = 0.0f;
+    private Vector3 cameraFollowOffset;
 
 
     // Start is called before the first frame update
     void Start()
     {
         playerCam = GetComponent<Camera>();
-        Matrix4x4 playerMat = Matrix4x4.TRS(followObject.transform.position, followObject.transform.rotation, Vector3.one);
-        Matrix4x4 cameraMat = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
-        playerToCameraOffset = playerMat.inverse * cameraMat;
+        cameraFollowOffset = transform.position - followObject.transform.position;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        (Vector3, Quaternion) cameraPose = ComputeCameraPose();
-
-        Vector3 screenPos = playerCam.WorldToScreenPoint(cameraPose.Item1);
-        Vector3 cameraPositionGoal = cameraPose.Item1;
+        Vector3 goalPosition = GetCameraGoal();
+        Vector3 screenPos = playerCam.WorldToScreenPoint(goalPosition);
         float slowDownFactor = 1.0f;
         if (IsWithinMargin(screenPos.x, playerCam.pixelWidth) && IsWithinMargin(screenPos.y, playerCam.pixelHeight))
         {
@@ -41,7 +36,7 @@ public class CameraObjectFollower : MonoBehaviour
             }
             if (slowDownTimer >= slowDownTime)
             {
-                cameraPositionGoal = transform.position;
+                goalPosition = transform.position;
             }
             slowDownFactor = 1.0f - (slowDownTimer / slowDownTime);
         }
@@ -50,12 +45,9 @@ public class CameraObjectFollower : MonoBehaviour
             slowDownTimer = 0.0f;
         }
 
-        Quaternion cameraRotationGoal = cameraPose.Item2;
-
         float followDelta = slowDownFactor * cameraFollowSpeed * Time.fixedDeltaTime;
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, cameraPositionGoal, followDelta);
-        Quaternion smoothedRotation = Quaternion.Lerp(transform.rotation, cameraRotationGoal, followDelta);
-        transform.SetPositionAndRotation(smoothedPosition, smoothedRotation);
+        Vector3 smoothedPosition = Vector3.Lerp(transform.position, goalPosition, followDelta);
+        transform.position = smoothedPosition;
     }
     bool IsWithinMargin(float value, float maxValue)
     {
@@ -63,17 +55,15 @@ public class CameraObjectFollower : MonoBehaviour
         return value > followMargin && value < 1.0f - followMargin;
     }
 
-    (Vector3, Quaternion) ComputeCameraPose()
+    private Vector3 GetCameraGoal()
     {
-        Matrix4x4 playerMat = Matrix4x4.TRS(followObject.transform.position, followObject.transform.rotation, Vector3.one);
-        Matrix4x4 cameraMat = playerToCameraOffset * playerMat;
-        return (cameraMat.GetT(), cameraMat.GetR());
+        return followObject.transform.position + cameraFollowOffset;
     }
+
 
     public void Recenter()
     {
-        (Vector3, Quaternion) cameraPose = ComputeCameraPose();
-        transform.SetPositionAndRotation(cameraPose.Item1, cameraPose.Item2);
+        transform.position = GetCameraGoal();
     }
 
     public void SetFollowObject(GameObject followObject)

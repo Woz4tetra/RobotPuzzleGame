@@ -4,6 +4,7 @@ class DialogManager : InteractionManager
     private bool isDialogActive = false;
     private int labelBorderSize = 5;
     private Conversation conversation = new Conversation();
+    private readonly Conversation noConversation = new Conversation();
     private string currentText = "";
 
     override protected void OnEnterInteracting(InteractableObjectInput objectInput)
@@ -18,7 +19,7 @@ class DialogManager : InteractionManager
         {
             if (conversation.ShouldActivateOnEnter())
             {
-                DequeueDialog();
+                ForwardNextDialogToDisplay();
             }
         }
     }
@@ -30,7 +31,7 @@ class DialogManager : InteractionManager
     override protected void OnExitInteracting(InteractableObjectInput objectInput)
     {
         Debug.Log($"{gameObject.name} exit interacting");
-        DequeueDialog();
+        ForwardNextDialogToDisplay();
     }
 
     override public bool IsInteracting()
@@ -41,30 +42,38 @@ class DialogManager : InteractionManager
     private bool UpdateConvoTrigger()
     {
         Robot robot = interactableObjectManager.GetActiveRobot();
-        Conversation nextConvo = robot.GetActiveConversation();
-        if (conversation.IsDone() && !nextConvo.IsDone())
+        Conversation nextConvo = robot.GetNextConversation();
+        if ((conversation.IsDone() || !conversation.IsStarted()) && nextConvo != conversation)
         {
             conversation = nextConvo;
-            Debug.Log("Robot is starting a conversation");
-            return true;
+            if (conversation.IsDone())
+            {
+                Debug.Log("Robot is clearing next conversation");
+                return false;
+            }
+            else
+            {
+                Debug.Log("Robot is starting a conversation");
+                return true;
+            }
         }
         return false;
     }
 
-    public void QueueDialog(Conversation conversation)
+    public void SetDialog(Conversation conversation)
     {
         this.conversation = conversation;
-        DequeueDialog();
+        ForwardNextDialogToDisplay();
     }
 
-    private void DequeueDialog()
+    private void ForwardNextDialogToDisplay()
     {
         (string, bool) result = conversation.getNext();
         currentText = result.Item1;
         isDialogActive = !result.Item2;
         if (!isDialogActive)
         {
-            conversation = new Conversation();
+            conversation = noConversation;
             Debug.Log("Conversation ended");
         }
         else

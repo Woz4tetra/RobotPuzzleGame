@@ -11,7 +11,8 @@ public class Robot : InteractableObject
     float epsilon = 1e-3f;
     private float forceDecay = 0.7f;
     private Vector3 force = Vector3.zero;
-    private Conversation activeConversation = new Conversation();
+    private Conversation nextConversation = new Conversation();
+    private Robot nearbyRobot = null;
 
     void Update()
     {
@@ -69,9 +70,9 @@ public class Robot : InteractableObject
         return transform.position;
     }
 
-    public Conversation GetActiveConversation()
+    public Conversation GetNextConversation()
     {
-        return activeConversation;
+        return nextConversation;
     }
 
     void OnTriggerEnter(Collider collision)
@@ -79,14 +80,48 @@ public class Robot : InteractableObject
         if (Helpers.InTagInTree(collision.gameObject, Tags.DialogTrigger.Value))
         {
             ConversationObject conversation = collision.gameObject.GetComponent<ConversationObject>();
-            if (conversation != null && activeConversation.IsDone())
+            if (conversation != null && nextConversation.IsDone())
             {
-                activeConversation = conversation.GetConversation();
-                Debug.Log($"{collision.gameObject.name} is setting the conversation. Is done: {activeConversation.IsDone()}");
-                foreach (string line in activeConversation.GetDialogTexts())
+                nextConversation = conversation.GetConversation();
+                Debug.Log($"{collision.gameObject.name} is setting the next conversation. Is done: {nextConversation.IsDone()}");
+                foreach (string line in nextConversation.GetDialogTexts())
                 {
                     Debug.Log(line);
                 }
+            }
+        }
+        // if (Helpers.InTagInTree(collision.gameObject, Tags.Robot.Value))
+        // {
+        //     Robot otherRobot = collision.gameObject.GetComponent<Robot>();
+        //     if (otherRobot != null)
+        //     {
+        //         bool shouldAssign;
+        //         if (nearbyRobot == null)
+        //         {
+        //             shouldAssign = true;
+        //         }
+        //         else
+        //         {
+        //             float otherDistance = (otherRobot.GetPosition() - GetPosition()).magnitude;
+        //             float nearbyDistance = (nearbyRobot.GetPosition() - GetPosition()).magnitude;
+        //             shouldAssign = otherDistance < nearbyDistance;
+        //         }
+        //         if (shouldAssign)
+        //         {
+        //             nearbyRobot = otherRobot;
+        //         }
+        //     }
+        // }
+    }
+    void OnTriggerExit(Collider collision)
+    {
+        if (Helpers.InTagInTree(collision.gameObject, Tags.DialogTrigger.Value))
+        {
+            ConversationObject conversation = collision.gameObject.GetComponent<ConversationObject>();
+            if (conversation != null && nextConversation == conversation.GetConversation())
+            {
+                nextConversation = new Conversation();
+                Debug.Log($"{collision.gameObject.name} is clearing the conversation.");
             }
         }
     }

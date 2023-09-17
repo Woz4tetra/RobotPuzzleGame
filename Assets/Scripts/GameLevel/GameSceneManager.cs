@@ -60,6 +60,7 @@ public class GameSceneManager : MonoBehaviour
     [SerializeField] private InteractableObjectManager interactableObjectManager;
     [SerializeField] private ActingManager actingManager;
     [SerializeField] private DialogManager dialogManager;
+    [SerializeField] private SwitchRobotManager switchRobotManager;
     [SerializeField] private float seekAnimationMultiplier = 2.0f;
 
     private int labelBorderSize = 5;
@@ -391,12 +392,17 @@ public class GameSceneManager : MonoBehaviour
         {
             return;
         }
+        switchRobotManager.UpdateInteraction(input, input.ShouldSwitch());
+        if (switchRobotManager.IsInteracting())
+        {
+            return;
+        }
         actingManager.UpdateInteraction(input, input.ShouldAct());
     }
 
     void QueueDialog()
     {
-        dialogManager.QueueDialog(new Conversation(new string[] { "Hello", "World" }));
+        dialogManager.SetDialog(new Conversation(new string[] { "Hello", "World" }));
     }
 
     void CancelInteractions()

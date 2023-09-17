@@ -49,11 +49,19 @@ public class Conversation
         }
     }
 
+    public void FinishConversation()
+    {
+        isDone = true;
+    }
+
     public bool IsDone()
     {
         return isDone;
     }
-
+    public bool IsStarted()
+    {
+        return dialogIndex >= 0;
+    }
     public string[] GetDialogTexts()
     {
         return dialogTexts;

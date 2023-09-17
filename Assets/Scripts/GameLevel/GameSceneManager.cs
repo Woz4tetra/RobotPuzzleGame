@@ -163,12 +163,14 @@ public class GameSceneManager : MonoBehaviour
         Robot switchedRobot = robot;
         float levelDuration = timePassingManager.GetLevelDuration();
         int seekDirection = 0;
+        SceneInstant seekGoal = null;
         Time.timeScale = 1.0f;
         InteractableObjectInput input = inputManager.GetInteractionStruct();
         switch (newState)
         {
             case LevelState.Moving:
                 deltaTime = Time.deltaTime;
+                seekDirection = inputManager.GetSeekDirection();
                 UpdateMovingInteractions(input);
                 interactableObjectManager.RecordObjectEvent();
                 break;
@@ -183,6 +185,10 @@ public class GameSceneManager : MonoBehaviour
                 {
                     switchedRobot = nextRobot;
                 }
+                break;
+            case LevelState.Reset:
+                seekDirection = -1;
+                seekGoal = timePassingManager.GetFirstInstant();
                 break;
             case LevelState.Seeking:
                 if (seekDestination != null)
@@ -215,7 +221,7 @@ public class GameSceneManager : MonoBehaviour
         }
         if (seekDirection != 0)
         {
-            OnSeekEnter(seekDirection);
+            OnSeekEnter(seekDirection, seekGoal);
         }
         if (switchedRobot != robot)
         {
@@ -249,17 +255,10 @@ public class GameSceneManager : MonoBehaviour
                 pauseMenuManager.OnActiveChange(true);
                 break;
             case LevelState.Reset:
-                SceneInstant instant = timePassingManager.GetFirstInstant();
-                Debug.Log($"Resetting to beginning. Active robot was {instant.activeRobot.gameObject.name}");
-                SetSeekDestination(new SeekDestination
-                {
-                    goal = new SceneInstant
-                    {
-                        activeRobot = instant.activeRobot,
-                        levelDuration = 0.0f
-                    },
-                    direction = -1
-                });
+                CancelInteractions();
+                break;
+            case LevelState.Seeking:
+                CancelInteractions();
                 break;
             default:
                 break;
@@ -287,22 +286,40 @@ public class GameSceneManager : MonoBehaviour
     // Seeking events
     // ---
 
-    void OnSeekEnter(int seekDirection)
+    void OnSeekEnter(int seekDirection, SceneInstant goalInstant = null)
     {
-        SceneInstant instant = timePassingManager.GetInstant(seekDirection);
-        if (instant != null)
+        SceneInstant instant;
+        if (goalInstant == null)
         {
-            Debug.Log($"Seeking {seekDirection} to {instant.levelDuration}");
-            SetSeekDestination(new SeekDestination
-            {
-                goal = instant,
-                direction = seekDirection
-            });
+            instant = timePassingManager.GetInstant(seekDirection);
         }
         else
         {
-            Debug.Log($"No instant to seek to in the {seekDirection} direction");
+            instant = goalInstant;
         }
+        if (instant == null)
+        {
+            if (seekDirection < 0)
+            {
+                instant = timePassingManager.GetFirstInstant();
+            }
+            else
+            {
+                instant = timePassingManager.GetLastInstant();
+            }
+        }
+        if (instant == null)
+        {
+            Debug.Log("No scene instant to seek to");
+            return;
+        }
+
+        Debug.Log($"Seeking {seekDirection} to {instant.levelDuration}");
+        SetSeekDestination(new SeekDestination
+        {
+            goal = instant,
+            direction = seekDirection
+        });
     }
 
     Robot OnSeekExit()
@@ -312,6 +329,7 @@ public class GameSceneManager : MonoBehaviour
         {
             CenterCameraOnRobot();
         }
+        interactableObjectManager.FreezeObjects();
         switchRobotManager.ResetNearbyRobot();
         seekDestination = null;
         return switchedRobot;

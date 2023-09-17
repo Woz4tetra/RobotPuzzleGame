@@ -5,6 +5,7 @@ class ActingManager : InteractionManager
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] GameObject trajectoryLinePrefab;
     [SerializeField] float maxTrajectoryProjectionDistance = 20.0f;
+    [SerializeField] int maxBouncePredictions = 3;
     private GameObject activeArrow;
     private GameObject activeTrajectoryLine;
     private float minArrowMagnitude = 0.25f;
@@ -121,7 +122,9 @@ class ActingManager : InteractionManager
     {
         RaycastHit hit;
         Ray ray = new Ray(origin, direction.normalized);
-        if (remainingDistance > 0.0f && Physics.SphereCast(ray, collisionRadius, out hit, remainingDistance, layerMask))
+        if (remainingDistance > 0.0f
+            && Physics.SphereCast(ray, collisionRadius, out hit, remainingDistance, layerMask)
+            && results.Count < maxBouncePredictions)
         {
             Vector3 nextOrigin = hit.point;
             nextOrigin.z = origin.z;

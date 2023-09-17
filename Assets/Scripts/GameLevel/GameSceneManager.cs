@@ -61,6 +61,7 @@ public class GameSceneManager : MonoBehaviour
     [SerializeField] private ActingManager actingManager;
     [SerializeField] private DialogManager dialogManager;
     [SerializeField] private SwitchRobotManager switchRobotManager;
+    [SerializeField] private ConversationSequence tutorialSequence;
     [SerializeField] private float seekAnimationMultiplier = 2.0f;
 
     private int labelBorderSize = 5;
@@ -278,7 +279,7 @@ public class GameSceneManager : MonoBehaviour
                 pauseMenuManager.OnActiveChange(false);
                 break;
             case LevelState.Start:
-                QueueDialog();
+                dialogManager.SetConversation(tutorialSequence);
                 break;
             default:
                 break;
@@ -447,11 +448,6 @@ public class GameSceneManager : MonoBehaviour
             return;
         }
         actingManager.UpdateInteraction(input, input.ShouldAct());
-    }
-
-    void QueueDialog()
-    {
-        dialogManager.SetDialog(new Conversation(new string[] { "Hello", "World" }));
     }
 
     void CancelInteractions()

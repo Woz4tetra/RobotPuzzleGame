@@ -2,10 +2,8 @@ using UnityEngine;
 class DialogManager : InteractionManager
 {
     private bool isDialogActive = false;
-    private int labelBorderSize = 5;
-    private Conversation conversation = new Conversation();
-    private readonly Conversation noConversation = new Conversation();
-    private string currentText = "";
+    private ConversationSequence conversation = null;
+    private ConversationAction currentAction = null;
 
     override protected void OnEnterInteracting(InteractableObjectInput objectInput)
     {
@@ -17,7 +15,7 @@ class DialogManager : InteractionManager
     {
         if (UpdateConvoTrigger())
         {
-            if (conversation.ShouldActivateOnEnter())
+            if (conversation != null && conversation.ShouldActivateOnEnter())
             {
                 ForwardNextDialogToDisplay();
             }
@@ -42,11 +40,11 @@ class DialogManager : InteractionManager
     private bool UpdateConvoTrigger()
     {
         Robot robot = interactableObjectManager.GetActiveRobot();
-        Conversation nextConvo = robot.GetNextConversation();
-        if ((conversation.IsDone() || !conversation.IsStarted()) && nextConvo != conversation)
+        ConversationSequence nextConvo = robot.GetNextConversation();
+        if ((conversation == null || conversation.IsDone() || !conversation.IsStarted()) && nextConvo != conversation)
         {
             conversation = nextConvo;
-            if (conversation.IsDone())
+            if (conversation == null || conversation.IsDone())
             {
                 Debug.Log("Robot is clearing next conversation");
                 return false;
@@ -60,46 +58,36 @@ class DialogManager : InteractionManager
         return false;
     }
 
-    public void SetDialog(Conversation conversation)
+    public void SetConversation(ConversationSequence conversation)
     {
+        Debug.Log($"Setting conversation to {conversation.gameObject.name}");
         this.conversation = conversation;
         ForwardNextDialogToDisplay();
     }
 
     private void ForwardNextDialogToDisplay()
     {
-        (string, bool) result = conversation.getNext();
-        currentText = result.Item1;
+        if (conversation == null)
+        {
+            isDialogActive = false;
+            return;
+        }
+        (ConversationAction, bool) result = conversation.getNext();
         isDialogActive = !result.Item2;
+        if (currentAction != null)
+        {
+            currentAction.Despawn();
+        }
         if (!isDialogActive)
         {
-            conversation = noConversation;
+            conversation = null;
             Debug.Log("Conversation ended");
         }
         else
         {
-            Debug.Log($"Conversation text is {currentText}");
+            currentAction = result.Item1;
+            currentAction.Render();
+            Debug.Log($"Conversation text is {currentAction}");
         }
-    }
-
-    void OnGUI()
-    {
-        if (!isDialogActive)
-        {
-            return;
-        }
-        string text = currentText;
-        GUIStyle labelStyle = new GUIStyle
-        {
-            fontSize = 20,
-            fontStyle = FontStyle.Bold,
-            normal = { textColor = Color.white }
-        };
-        Vector2 size = labelStyle.CalcSize(new GUIContent(text));
-
-        Rect boxRect = new Rect(0, Screen.height - size.y - 2 * labelBorderSize, size.x + 2 * labelBorderSize, size.y + 2 * labelBorderSize);
-        Rect labelRect = new Rect(boxRect.x + labelBorderSize, boxRect.y + labelBorderSize, size.x, size.y);
-        GUI.Box(boxRect, GUIContent.none);
-        GUI.Label(labelRect, text, labelStyle);
     }
 }

@@ -11,7 +11,7 @@ public class Robot : InteractableObject
     float epsilon = 1e-3f;
     private float forceDecay = 0.7f;
     private Vector3 force = Vector3.zero;
-    private Conversation nextConversation = new Conversation();
+    private ConversationSequence nextConversation = null;
     private Robot nearbyRobot = null;
 
     void Update()
@@ -75,7 +75,7 @@ public class Robot : InteractableObject
         return collisionRadius;
     }
 
-    public Conversation GetNextConversation()
+    public ConversationSequence GetNextConversation()
     {
         return nextConversation;
     }
@@ -89,15 +89,11 @@ public class Robot : InteractableObject
     {
         if (Helpers.InTagInTree(collision.gameObject, Tags.DialogTrigger.Value))
         {
-            ConversationObject conversation = Helpers.GetComponentInTree<ConversationObject>(collision.gameObject);
-            if (conversation != null && nextConversation.IsDone())
+            ConversationSequence conversation = Helpers.GetComponentInTree<ConversationSequence>(collision.gameObject);
+            if (conversation != null && (nextConversation == null || nextConversation.IsDone()))
             {
-                nextConversation = conversation.GetConversation();
+                nextConversation = conversation;
                 Debug.Log($"{collision.gameObject.name} is setting the next conversation. Is done: {nextConversation.IsDone()}");
-                foreach (string line in nextConversation.GetDialogTexts())
-                {
-                    Debug.Log(line);
-                }
             }
         }
         else if (Helpers.InTagInTree(collision.gameObject, Tags.SwitchRobotTrigger.Value))
@@ -129,10 +125,10 @@ public class Robot : InteractableObject
     {
         if (Helpers.InTagInTree(collision.gameObject, Tags.DialogTrigger.Value))
         {
-            ConversationObject conversation = Helpers.GetComponentInTree<ConversationObject>(collision.gameObject);
-            if (conversation != null && nextConversation == conversation.GetConversation())
+            ConversationSequence conversation = Helpers.GetComponentInTree<ConversationSequence>(collision.gameObject);
+            if (conversation != null && nextConversation == conversation)
             {
-                nextConversation = new Conversation();
+                nextConversation = null;
                 Debug.Log($"{collision.gameObject.name} is clearing the next conversation.");
             }
         }

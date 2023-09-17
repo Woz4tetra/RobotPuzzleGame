@@ -171,6 +171,10 @@ public class GameSceneManager : MonoBehaviour
             case LevelState.Moving:
                 deltaTime = Time.deltaTime;
                 seekDirection = inputManager.GetSeekDirection();
+                if (seekDirection != 0)
+                {
+                    seekGoal = timePassingManager.GetLastInstant();
+                }
                 UpdateMovingInteractions(input);
                 interactableObjectManager.RecordObjectEvent();
                 break;

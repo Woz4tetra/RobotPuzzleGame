@@ -36,7 +36,7 @@ public abstract class InteractableObject : MonoBehaviour
         ), levelDuration);
     }
 
-    public void UnfreezeObject(float levelDuration)
+    public void UnfreezeObject(float levelDuration, bool applyVelocity = true)
     {
         body.isKinematic = false;
         ObjectInstant instant = historyManager.UnfreezeObject(levelDuration);
@@ -45,8 +45,11 @@ public abstract class InteractableObject : MonoBehaviour
             return;
         }
         Debug.Log($"Unfreezing object {gameObject.name}");
-        body.velocity = instant.velocity;
-        body.angularVelocity = instant.angularVelocity;
+        if (applyVelocity)
+        {
+            body.velocity = instant.velocity;
+            body.angularVelocity = instant.angularVelocity;
+        }
     }
 
     public void JumpToInstant(float levelDuration)

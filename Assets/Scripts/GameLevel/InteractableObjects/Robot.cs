@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class Robot : InteractableObject
 {
-    [SerializeField] GameObject arrowPrefab;
     [SerializeField] float forceMagnitude = 1.0f;
     [SerializeField] float frozenSpeed = 0.1f;
     [SerializeField] float rapidDecelSpeedThreshold = 3.0f;
     [SerializeField] float lowDrag = 0.5f;
     [SerializeField] float highDrag = 10.0f;
+    [SerializeField] float collisionRadius = 0.5f;
     float epsilon = 1e-3f;
     private float forceDecay = 0.7f;
     private Vector3 force = Vector3.zero;
@@ -68,6 +68,11 @@ public class Robot : InteractableObject
     public Vector3 GetPosition()
     {
         return transform.position;
+    }
+
+    public float GetCollisionRadius()
+    {
+        return collisionRadius;
     }
 
     public Conversation GetNextConversation()

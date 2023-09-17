@@ -49,7 +49,7 @@ public class InteractableObjectManager : MonoBehaviour
         timePassingManager.Unfreeze();
         foreach (InteractableObject obj in interactableObjects)
         {
-            obj.UnfreezeObject(timePassingManager.GetLevelDuration());
+            obj.UnfreezeObject(timePassingManager.GetLevelDuration(), obj != activeRobot);
         }
     }
 

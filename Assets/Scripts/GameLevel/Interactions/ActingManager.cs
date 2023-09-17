@@ -4,7 +4,8 @@ class ActingManager : InteractionManager
 {
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] GameObject trajectoryLinePrefab;
-    [SerializeField] float maxTrajectoryProjectionDistance = 20.0f;
+    [SerializeField] float maxTrajectoryProjectionDistance = 30.0f;
+    [SerializeField] float inputProjectMulitplier = 50.0f;
     [SerializeField] int maxBouncePredictions = 3;
     private GameObject activeArrow;
     private GameObject activeTrajectoryLine;
@@ -28,7 +29,10 @@ class ActingManager : InteractionManager
     {
         Robot robot = interactableObjectManager.GetActiveRobot();
         ScaleArrow(robot.GetPosition(), objectInput.GetMoveDirection());
-        float projectionDistance = maxTrajectoryProjectionDistance * objectInput.GetMoveDirection().magnitude;
+        float projectionDistance = Mathf.Min(
+            maxTrajectoryProjectionDistance,
+            inputProjectMulitplier * objectInput.GetMoveDirection().magnitude
+        );
         SetTrajectoryLinePoints(
             ComputeTrajectoryRaycasts(robot.GetPosition(), objectInput.GetMoveDirection(), robot.GetCollisionRadius(), projectionDistance)
         );
@@ -122,15 +126,20 @@ class ActingManager : InteractionManager
     {
         RaycastHit hit;
         Ray ray = new Ray(origin, direction.normalized);
-        if (remainingDistance > 0.0f
-            && Physics.SphereCast(ray, collisionRadius, out hit, remainingDistance, layerMask)
-            && results.Count < maxBouncePredictions)
+        if (remainingDistance <= 0.0f)
+        {
+            return;
+        }
+        if (Physics.SphereCast(ray, collisionRadius, out hit, remainingDistance, layerMask))
         {
             Vector3 nextOrigin = hit.point;
             nextOrigin.z = origin.z;
             Vector3 nextDirection = Vector3.Reflect(nextOrigin - origin, hit.normal);
             results.Add(nextOrigin);
-            RaycastToNextCollision(ref results, nextOrigin, nextDirection, collisionRadius, remainingDistance - hit.distance, layerMask);
+            if (results.Count < maxBouncePredictions)
+            {
+                RaycastToNextCollision(ref results, nextOrigin, nextDirection, collisionRadius, remainingDistance - hit.distance, layerMask);
+            }
         }
         else
         {

@@ -6,12 +6,13 @@ public abstract class InteractableObject : MonoBehaviour
     protected Rigidbody body;
     protected HistoryManager historyManager = new HistoryManager();
 
-    void Start()
+    virtual protected void Start()
     {
         body = GetComponent<Rigidbody>();
     }
 
-    abstract public void OnEnterInteracting();
+    abstract public void OnEnterInteracting(InteractableObjectInput objectInput);
+    abstract public void OnInteracting(InteractableObjectInput objectInput);
     abstract public void OnExitInteracting(InteractableObjectInput objectInput);
 
     void OnDrawGizmos()

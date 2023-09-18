@@ -3,12 +3,16 @@ using UnityEngine;
 class ActingManager : InteractionManager
 {
     [SerializeField] GameObject arrowPrefab;
+    [SerializeField] GameObject powerUpPrefab;
     [SerializeField] GameObject trajectoryLinePrefab;
     [SerializeField] float maxTrajectoryProjectionDistance = 30.0f;
     [SerializeField] float inputProjectMulitplier = 50.0f;
     [SerializeField] int maxBouncePredictions = 3;
     private GameObject activeArrow;
+    private GameObject activePowerUp;
+    private RocketPowerUpAnimation powerUpAnimator;
     private GameObject activeTrajectoryLine;
+    private LineRenderer trajectoryLineRenderer;
     private float minArrowMagnitude = 0.25f;
     private bool shouldRobotBeMoving = false;
     private float lastInteractExitTime = 0.0f;
@@ -20,8 +24,12 @@ class ActingManager : InteractionManager
         Robot robot = interactableObjectManager.GetActiveRobot();
         SpawnArrow(robot.GetPosition());
         ScaleArrow(robot.GetPosition(), objectInput.GetMoveDirection());
-        SpawnTrajectoryLine(robot.GetPosition());
-        robot.OnEnterInteracting();
+
+        SpawnPowerUp(robot.GetPosition(), objectInput.GetMoveDirection(), robot.GetCollisionRadius());
+        ScalePowerUp(robot.GetPosition(), objectInput.GetMoveDirection(), robot.GetCollisionRadius());
+
+        SpawnTrajectoryLine();
+        robot.OnEnterInteracting(objectInput);
         shouldRobotBeMoving = false;
     }
 
@@ -29,6 +37,7 @@ class ActingManager : InteractionManager
     {
         Robot robot = interactableObjectManager.GetActiveRobot();
         ScaleArrow(robot.GetPosition(), objectInput.GetMoveDirection());
+        ScalePowerUp(robot.GetPosition(), objectInput.GetMoveDirection(), robot.GetCollisionRadius());
         float projectionDistance = Mathf.Min(
             maxTrajectoryProjectionDistance,
             inputProjectMulitplier * objectInput.GetMoveDirection().magnitude
@@ -36,6 +45,7 @@ class ActingManager : InteractionManager
         SetTrajectoryLinePoints(
             ComputeTrajectoryRaycasts(robot.GetPosition(), objectInput.GetMoveDirection(), robot.GetCollisionRadius(), projectionDistance)
         );
+        robot.OnInteracting(objectInput);
     }
 
     override protected void OnIdle(InteractableObjectInput objectInput)
@@ -47,6 +57,7 @@ class ActingManager : InteractionManager
     {
         Debug.Log($"{gameObject.name} exit interacting");
         DespawnArrow();
+        DespawnPowerUp();
         DespawnTrajectoryLine();
         Robot robot = interactableObjectManager.GetActiveRobot();
         robot.OnExitInteracting(objectInput);
@@ -68,7 +79,6 @@ class ActingManager : InteractionManager
     {
         activeArrow = Instantiate(arrowPrefab, robotPosition, Quaternion.identity);
     }
-
     private void ScaleArrow(Vector3 robotPosition, Vector2 direction)
     {
         float magnitude = Mathf.Max(minArrowMagnitude, direction.magnitude);
@@ -84,17 +94,45 @@ class ActingManager : InteractionManager
         Destroy(activeArrow);
     }
 
-    private void SpawnTrajectoryLine(Vector3 robotPosition)
+    private void SpawnPowerUp(Vector3 robotPosition, Vector2 direction, float robotRadius)
+    {
+        Vector3 spawnLocation = GetPowerUpPosition(robotPosition, direction, robotRadius);
+        activePowerUp = Instantiate(powerUpPrefab, spawnLocation, Quaternion.identity);
+        powerUpAnimator = activePowerUp.GetComponent<RocketPowerUpAnimation>();
+    }
+
+    private void ScalePowerUp(Vector3 robotPosition, Vector2 direction, float robotRadius)
+    {
+        activePowerUp.transform.position = GetPowerUpPosition(robotPosition, direction, robotRadius);
+        float magnitude = Mathf.Max(minArrowMagnitude, direction.magnitude) * 4.0f;
+        powerUpAnimator.SetIntensity(magnitude);
+    }
+
+    private Vector3 GetPowerUpPosition(Vector3 robotPosition, Vector2 direction, float robotRadius)
+    {
+        Vector3 direction3 = new Vector3(direction.x, direction.y, 0.0f);
+        Vector3 result = robotPosition - direction3.normalized * robotRadius;
+        result.z -= 0.25f;
+        return result;
+    }
+
+    private void DespawnPowerUp()
+    {
+        Destroy(activePowerUp);
+    }
+
+    private void SpawnTrajectoryLine()
     {
         activeTrajectoryLine = Instantiate(trajectoryLinePrefab, Vector3.zero, Quaternion.identity);
-        LineRenderer lr = activeTrajectoryLine.GetComponent<LineRenderer>();
-        lr.material = new Material(Shader.Find("Sprites/Default"));
+        trajectoryLineRenderer = activeTrajectoryLine.GetComponent<LineRenderer>();
+        trajectoryLineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         Gradient gradient = new Gradient();
         gradient.SetKeys(
             new GradientColorKey[] { new GradientColorKey(new Color(1.0f, 0.0f, 0.0f), 0.0f), new GradientColorKey(new Color(1.0f, 0.1f, 0.1f), 1.0f) },
             new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(0.0f, 1.0f) }
         );
-        lr.colorGradient = gradient;
+        trajectoryLineRenderer.colorGradient = gradient;
+        Debug.Log($"trajectoryLineRenderer: {trajectoryLineRenderer}");
     }
 
     private void SetTrajectoryLinePoints(List<Vector3> points)
@@ -103,9 +141,8 @@ class ActingManager : InteractionManager
         {
             return;
         }
-        LineRenderer lr = activeTrajectoryLine.GetComponent<LineRenderer>();
-        lr.positionCount = points.Count;
-        lr.SetPositions(points.ToArray());
+        trajectoryLineRenderer.positionCount = points.Count;
+        trajectoryLineRenderer.SetPositions(points.ToArray());
     }
 
     private List<Vector3> ComputeTrajectoryRaycasts(Vector3 robotPosition, Vector2 direction, float collisionRadius, float projectionDistance)

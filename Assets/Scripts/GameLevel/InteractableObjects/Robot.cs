@@ -11,11 +11,28 @@ public class Robot : InteractableObject
     float epsilon = 1e-3f;
     private float forceDecay = 0.7f;
     private Vector3 force = Vector3.zero;
+    private Vector3 nextForce = Vector3.zero;
     private ConversationSequence nextConversation = null;
     private Robot nearbyRobot = null;
+    private Vector3 direction = Vector3.zero;
+    private Vector3 rawDirection = Vector3.zero;
+    private Vector3 prevPosition = Vector3.zero;
+
+    override protected void Start()
+    {
+        base.Start();
+        prevPosition = transform.position;
+    }
 
     void Update()
     {
+        rawDirection = transform.position - prevPosition;
+        prevPosition = transform.position;
+        if (rawDirection.magnitude > epsilon)
+        {
+            direction = rawDirection;
+        }
+
         if (body.isKinematic)
         {
             return;
@@ -47,22 +64,28 @@ public class Robot : InteractableObject
         return body.velocity.magnitude > frozenSpeed;
     }
 
-    override public void OnEnterInteracting()
+    override public void OnEnterInteracting(InteractableObjectInput objectInput)
     {
 
     }
 
-    override public void OnExitInteracting(InteractableObjectInput objectInput)
+    override public void OnInteracting(InteractableObjectInput objectInput)
     {
-        body.drag = lowDrag;
         Vector2 moveDirection = objectInput.GetMoveDirection();
-        force = new Vector3
+        nextForce = new Vector3
         {
             x = moveDirection.x,
             y = moveDirection.y,
             z = 0.0f
         };
-        force *= forceMagnitude;
+        nextForce *= forceMagnitude;
+    }
+
+    override public void OnExitInteracting(InteractableObjectInput objectInput)
+    {
+        body.drag = lowDrag;
+        force = nextForce;
+        nextForce = Vector3.zero;
     }
 
     public Vector3 GetPosition()
@@ -70,6 +93,25 @@ public class Robot : InteractableObject
         return transform.position;
     }
 
+    public Vector3 GetDirection()
+    {
+        return rawDirection;
+    }
+
+    public Vector3 GetNextForce()
+    {
+        return nextForce;
+    }
+
+    public Vector3 GetForce()
+    {
+        return force;
+    }
+
+    public Vector3 GetLastDirection()
+    {
+        return direction;
+    }
     public float GetCollisionRadius()
     {
         return collisionRadius;

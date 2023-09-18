@@ -6,6 +6,17 @@ public class TextDialogAction : ConversationAction
 {
     [SerializeField] private string text;
     private bool shouldShow = false;
+    private GUIStyle labelStyle;
+    void Start()
+    {
+        labelStyle = new GUIStyle
+        {
+            fontSize = 36,
+            fontStyle = FontStyle.Normal,
+            normal = { textColor = Color.white },
+        };
+        labelStyle.normal.background = MakeTexture(2, 2, new Color(0.0f, 0.0f, 0.0f, 1.0f));
+    }
     public TextDialogAction(string text)
     {
         this.text = text;
@@ -27,18 +38,25 @@ public class TextDialogAction : ConversationAction
         {
             return;
         }
-        GUIStyle labelStyle = new GUIStyle
-        {
-            fontSize = 20,
-            fontStyle = FontStyle.Bold,
-            normal = { textColor = Color.white }
-        };
-        float labelBorderSize = 5;
-        Vector2 size = labelStyle.CalcSize(new GUIContent(text));
 
-        Rect boxRect = new Rect(0, Screen.height - size.y - 2 * labelBorderSize, size.x + 2 * labelBorderSize, size.y + 2 * labelBorderSize);
-        Rect labelRect = new Rect(boxRect.x + labelBorderSize, boxRect.y + labelBorderSize, size.x, size.y);
-        GUI.Box(boxRect, GUIContent.none);
+        Vector2 size = labelStyle.CalcSize(new GUIContent(text));
+        float box_height = size.y * 2.0f;
+
+        Rect boxRect = new Rect(0, Screen.height - box_height, Screen.width, box_height);
+        Rect labelRect = new Rect(boxRect.x, boxRect.y + size.y / 2.0f, size.x, size.y);
+        GUI.Box(boxRect, GUIContent.none, labelStyle);
         GUI.Label(labelRect, text, labelStyle);
+    }
+    private Texture2D MakeTexture(int width, int height, Color col)
+    {
+        Color[] pix = new Color[width * height];
+        for (int i = 0; i < pix.Length; ++i)
+        {
+            pix[i] = col;
+        }
+        Texture2D result = new Texture2D(width, height);
+        result.SetPixels(pix);
+        result.Apply();
+        return result;
     }
 }

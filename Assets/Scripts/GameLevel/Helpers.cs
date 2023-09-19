@@ -1,6 +1,19 @@
 using UnityEngine;
 public static class Helpers
 {
+    public static GameObject GetParent(GameObject obj)
+    {
+        Transform tf = obj.transform;
+        while (true)
+        {
+            if (tf == null)
+            {
+                return obj;
+            }
+            obj = tf.gameObject;
+            tf = tf.parent;
+        }
+    }
     public static bool InTagInTree(GameObject obj, string tag)
     {
         if (obj.tag.Equals(tag))

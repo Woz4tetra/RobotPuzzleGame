@@ -5,6 +5,7 @@ class ActingManager : InteractionManager
     [SerializeField] GameObject arrowPrefab;
     [SerializeField] GameObject powerUpPrefab;
     [SerializeField] GameObject trajectoryLinePrefab;
+    [SerializeField] GameObject explosionPrefab;
     [SerializeField] float maxTrajectoryProjectionDistance = 30.0f;
     [SerializeField] float inputProjectMulitplier = 50.0f;
     [SerializeField] int maxBouncePredictions = 3;
@@ -56,10 +57,11 @@ class ActingManager : InteractionManager
     override protected void OnExitInteracting(InteractableObjectInput objectInput)
     {
         Debug.Log($"{gameObject.name} exit interacting");
+        Robot robot = interactableObjectManager.GetActiveRobot();
         DespawnArrow();
         DespawnPowerUp();
         DespawnTrajectoryLine();
-        Robot robot = interactableObjectManager.GetActiveRobot();
+        SpawnExplosion(robot.GetPosition(), robot.GetCollisionRadius());
         robot.OnExitInteracting(objectInput);
         shouldRobotBeMoving = true;
         lastInteractExitTime = Time.realtimeSinceStartup;
@@ -187,5 +189,12 @@ class ActingManager : InteractionManager
     private void DespawnTrajectoryLine()
     {
         Destroy(activeTrajectoryLine);
+    }
+
+    private void SpawnExplosion(Vector3 robotPosition, float robotRadius)
+    {
+        // Explosions despawn on animation complete
+        Vector3 spawnPosition = new Vector3(robotPosition.x, robotPosition.y, -robotRadius * 1.5f);
+        Instantiate(explosionPrefab, spawnPosition, Quaternion.identity);
     }
 }

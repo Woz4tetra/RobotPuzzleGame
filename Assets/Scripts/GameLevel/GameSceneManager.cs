@@ -279,7 +279,10 @@ public class GameSceneManager : MonoBehaviour
                 pauseMenuManager.OnActiveChange(false);
                 break;
             case LevelState.Start:
-                dialogManager.SetConversation(tutorialSequence);
+                if (tutorialSequence != null)
+                {
+                    dialogManager.SetConversation(tutorialSequence);
+                }
                 break;
             default:
                 break;

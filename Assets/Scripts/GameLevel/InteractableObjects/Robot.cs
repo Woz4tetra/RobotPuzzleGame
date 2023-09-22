@@ -8,6 +8,7 @@ public class Robot : InteractableObject
     [SerializeField] float lowDrag = 0.5f;
     [SerializeField] float highDrag = 10.0f;
     [SerializeField] float collisionRadius = 0.5f;
+    [SerializeField] float insignificantForce = 0.01f;
     float epsilon = 1e-3f;
     private float forceDecay = 0.7f;
     private Vector3 force = Vector3.zero;
@@ -83,6 +84,11 @@ public class Robot : InteractableObject
 
     override public void OnExitInteracting(InteractableObjectInput objectInput)
     {
+        if (nextForce.magnitude < insignificantForce)
+        {
+            nextForce = Vector3.zero;
+            return;
+        }
         body.drag = lowDrag;
         force = nextForce;
         nextForce = Vector3.zero;

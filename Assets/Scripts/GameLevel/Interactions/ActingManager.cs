@@ -61,7 +61,7 @@ class ActingManager : InteractionManager
         DespawnArrow();
         DespawnPowerUp();
         DespawnTrajectoryLine();
-        SpawnExplosion(robot.GetPosition(), robot.GetCollisionRadius());
+        SpawnExplosion(robot.GetPosition(), robot.GetCollisionRadius(), objectInput.GetMoveDirection());
         robot.OnExitInteracting(objectInput);
         shouldRobotBeMoving = true;
         lastInteractExitTime = Time.realtimeSinceStartup;
@@ -191,10 +191,15 @@ class ActingManager : InteractionManager
         Destroy(activeTrajectoryLine);
     }
 
-    private void SpawnExplosion(Vector3 robotPosition, float robotRadius)
+    private void SpawnExplosion(Vector3 robotPosition, float robotRadius, Vector2 inputDirection)
     {
         // Explosions despawn on animation complete
-        Vector3 spawnPosition = new Vector3(robotPosition.x, robotPosition.y, -robotRadius * 1.5f);
+        if (inputDirection.magnitude < 0.01f)
+        {
+            return;
+        }
+        float multiplier = Mathf.Min(1.0f, Mathf.Max(0.0f, inputDirection.magnitude));
+        Vector3 spawnPosition = new Vector3(robotPosition.x, robotPosition.y, -robotRadius * multiplier * 1.5f);
         Instantiate(explosionPrefab, spawnPosition, Quaternion.identity);
     }
 }

@@ -20,9 +20,8 @@ public class InputManager : MonoBehaviour
         {
             Vector2 rawDirection = mousePosition - prevClickPosition;
             Vector2 scaledDirection = new Vector2(rawDirection.x / Screen.width, rawDirection.y / Screen.height);
-            float x = Mathf.Max(-1.0f, Mathf.Min(scaledDirection.x, 1.0f));
-            float y = Mathf.Max(-1.0f, Mathf.Min(scaledDirection.y, 1.0f));
-            return new Vector2(x, y);
+            scaledDirection *= 4.0f;
+            return Vector2.ClampMagnitude(scaledDirection, 1.0f);
         }
         else
         {
